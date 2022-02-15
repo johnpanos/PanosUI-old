@@ -1,12 +1,16 @@
 #include <iostream>
 #include <errno.h>
-#include <fcntl.h>
-#include <limits.h>
 #include <stdbool.h>
 #include <cstring>
-#include <sys/mman.h>
 #include <unistd.h>
+#include <GLES2/gl2.h>
 #include <wayland-client.h>
+#include <wayland-egl.h>
+
+#include <EGL/egl.h>
+
+#include <egl.hpp>
+
 #include "xdg-shell-client-protocol.h"
 
 /* Wayland code */
@@ -135,6 +139,9 @@ int main(int argc, char *argv[])
     std::cout << "Start\n";
     RegistryProvider *provider = new RegistryProvider;
     provider->setup();
+
+    EGLProvider *egl_provider = new EGLProvider;
+    egl_provider->create_window(provider->wl_display);
 
     // state.wl_surface = wl_compositor_create_surface(state.wl_compositor);
 
