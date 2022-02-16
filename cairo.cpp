@@ -11,8 +11,6 @@
 
 #include <egl.hpp>
 
-#include <include/core/SkCanvas.h>
-
 #include "xdg-shell-client-protocol.h"
 
 /* Wayland code */
@@ -27,30 +25,36 @@ struct client_state
     /* Objects */
     struct wl_surface *wl_surface;
     struct xdg_surface *xdg_surface;
-    struct xdg_toplevel *xdg_toplevel;
+    struct xdg_toplevel *toplevel;
 };
 
-static void
-wl_buffer_release(void *data, struct wl_buffer *wl_buffer)
+class RegistryProvider
 {
-    /* Sent by the compositor when it's no longer using this buffer */
-    wl_buffer_destroy(wl_buffer);
-}
+public:
+    struct wl_registry *wl_registry;
+    struct wl_display *wl_display;
+    struct wl_compositor *wl_compositor;
+    struct xdg_wm_base *xdg_wm_base;
 
-static const struct wl_buffer_listener wl_buffer_listener = {
-    .release = wl_buffer_release,
+    struct wl_surface *wl_surface;
+    struct xdg_surface *xdg_surface;
+
+    struct xdg_toplevel *toplevel;
+
+    void setup();
+    void setup_toplevel();
 };
 
 static void
 xdg_surface_configure(void *data,
                       struct xdg_surface *xdg_surface, uint32_t serial)
 {
-    struct client_state *state = static_cast<struct client_state *>(data);
+    RegistryProvider *provider = static_cast<RegistryProvider *>(data);
     xdg_surface_ack_configure(xdg_surface, serial);
 
     // struct wl_buffer *buffer = draw_frame(state);
     // wl_surface_attach(state->wl_surface, buffer, 0, 0);
-    wl_surface_commit(state->wl_surface);
+    provider->setup_toplevel();
 }
 
 static const struct xdg_surface_listener xdg_surface_listener = {
@@ -65,17 +69,6 @@ xdg_wm_base_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial)
 
 static const struct xdg_wm_base_listener xdg_wm_base_listener = {
     .ping = xdg_wm_base_ping,
-};
-
-class RegistryProvider
-{
-public:
-    struct wl_registry *wl_registry;
-    struct wl_display *wl_display;
-    struct wl_compositor *wl_compositor;
-    struct xdg_wm_base *xdg_wm_base;
-
-    void setup();
 };
 
 static void
@@ -109,6 +102,20 @@ static const struct wl_registry_listener wl_registry_listener = {
     .global_remove = registry_global_remove,
 };
 
+static void
+xdg_toplevel_configure_handler(void *data,
+                               struct xdg_toplevel *xdg_toplevel,
+                               int32_t width,
+                               int32_t height,
+                               struct wl_array *states)
+{
+    printf("configure: %dx%d\n", width, height);
+}
+
+static const struct xdg_toplevel_listener xdg_top_level_listener = {
+    .configure = xdg_toplevel_configure_handler,
+};
+
 void RegistryProvider::setup()
 {
     {
@@ -133,7 +140,25 @@ void RegistryProvider::setup()
             std::cerr << "Could not find compositor or xdg_wm_base\n";
             exit(1);
         }
+
+        this->wl_surface = wl_compositor_create_surface(this->wl_compositor);
+        this->xdg_surface = xdg_wm_base_get_xdg_surface(this->xdg_wm_base, this->wl_surface);
+
+        this->toplevel = xdg_surface_get_toplevel(this->xdg_surface);
+        xdg_toplevel_set_title(this->toplevel, "Hello World");
+
+        xdg_surface_add_listener(this->xdg_surface, &xdg_surface_listener, this);
+        xdg_toplevel_add_listener(this->toplevel, &xdg_top_level_listener, this);
+
+        wl_surface_commit(this->wl_surface);
+        wl_display_roundtrip(this->wl_display);
     }
+}
+
+void RegistryProvider::setup_toplevel()
+{
+    EGLProvider *egl_provider = new EGLProvider;
+    egl_provider->create_window(this->wl_display, this->wl_surface);
 }
 
 int main(int argc, char *argv[])
@@ -142,9 +167,6 @@ int main(int argc, char *argv[])
         << "Start\n";
     RegistryProvider *provider = new RegistryProvider;
     provider->setup();
-
-    EGLProvider *egl_provider = new EGLProvider;
-    egl_provider->create_window(provider->wl_display);
 
     // state.wl_surface = wl_compositor_create_surface(state.wl_compositor);
 
@@ -155,8 +177,13 @@ int main(int argc, char *argv[])
     // }
 
     // state.xdg_surface = xdg_wm_base_get_xdg_surface(state.xdg_wm_base, state.wl_surface);
-    // xdg_surface_add_listener(state.xdg_surface, &xdg_surface_listener, NULL);
 
     // cleanup_wayland(&state);
+
+    while (true)
+    {
+        wl_display_dispatch(provider->wl_display);
+    }
+
     return 0;
 }

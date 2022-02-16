@@ -3,22 +3,24 @@
 #endif
 
 #include <wayland-client.h>
+#include <wayland-egl.h>
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#include <cairo/cairo.h>
-#include <cairo/cairo-gl.h>
 
 class EGLProvider
 {
 public:
-    EGLDisplay *egl_display;
-    EGLConfig *egl_config;
-    EGLContext *egl_context;
+    EGLDisplay egl_display;
+    EGLConfig egl_config;
+    EGLContext egl_context;
 
-    cairo_device_t *cairo_device;
+    EGLSurface egl_surface;
 
-    void create_window(struct wl_display *display);
+    wl_egl_window *egl_window;
+
+    void
+    create_window(struct wl_display *display, struct wl_surface *surface);
 
     void init_cairo();
 };
