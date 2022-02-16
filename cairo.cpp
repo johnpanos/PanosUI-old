@@ -41,6 +41,9 @@ public:
 
     struct xdg_toplevel *toplevel;
 
+    int32_t width;
+    int32_t height;
+
     void setup();
     void setup_toplevel();
 };
@@ -110,6 +113,9 @@ xdg_toplevel_configure_handler(void *data,
                                struct wl_array *states)
 {
     printf("configure: %dx%d\n", width, height);
+    RegistryProvider *provider = static_cast<RegistryProvider *>(data);
+    provider->width = width;
+    provider->height = height;
 }
 
 static const struct xdg_toplevel_listener xdg_top_level_listener = {
@@ -179,11 +185,6 @@ int main(int argc, char *argv[])
     // state.xdg_surface = xdg_wm_base_get_xdg_surface(state.xdg_wm_base, state.wl_surface);
 
     // cleanup_wayland(&state);
-
-    while (true)
-    {
-        wl_display_dispatch(provider->wl_display);
-    }
 
     return 0;
 }

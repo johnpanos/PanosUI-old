@@ -2,6 +2,18 @@
 #include <iostream>
 #include <GL/gl.h>
 
+#define SK_GL 1
+
+#include <include/gpu/GrDirectContext.h>
+#include <include/gpu/gl/GrGLInterface.h>
+#include <include/gpu/gl/GrGLAssembleInterface.h>
+#include <include/gpu/GrBackendSurface.h>
+#include <include/core/SkSurface.h>
+#include <include/core/SkCanvas.h>
+#include <include/core/SkPaint.h>
+
+#include <include/gpu/gl/GrGLFunctions.h>
+
 const EGLint config_attributes[] = {
     EGL_SURFACE_TYPE,
     EGL_WINDOW_BIT,
@@ -12,6 +24,8 @@ const EGLint config_attributes[] = {
     EGL_BLUE_SIZE,
     8,
     EGL_ALPHA_SIZE,
+    8,
+    EGL_STENCIL_SIZE,
     8,
     EGL_RENDERABLE_TYPE,
     EGL_OPENGL_ES2_BIT,
@@ -90,10 +104,64 @@ void EGLProvider::create_window(struct wl_display *display, struct wl_surface *s
         std::cerr << eglGetError() << " Brokey\n";
     }
 
-    glClearColor(10, 10, 10, 0.5F);
-    glClear(GL_COLOR_BUFFER_BIT);
+    GrGLGetProc get_proc = [](void *context, const char name[]) -> GrGLFuncPtr
+    {
+        std::cout << name << "\n";
+        return eglGetProcAddress(name);
+    };
+
+    sk_sp<const GrGLInterface> interface = GrGLMakeAssembledGLESInterface(this, get_proc);
+    GrDirectContext *context = GrDirectContext::MakeGL(interface).release();
+
+    GrGLFramebufferInfo framebufferInfo;
+    framebufferInfo.fFBOID = 0; // assume default framebuffer
+    // We are always using OpenGL and we use RGBA8 internal format for both RGBA and BGRA configs in OpenGL.
+    //(replace line below with this one to enable correct color spaces) framebufferInfo.fFormat = GL_SRGB8_ALPHA8;
+    framebufferInfo.fFormat = GL_RGBA8;
+
+    SkColorType colorType;
+    colorType = kRGBA_8888_SkColorType;
+    GrBackendRenderTarget backendRenderTarget(500, 500,
+                                              0, // sample count
+                                              0, // stencil bits
+                                              framebufferInfo);
+
+    SkSurfaceProps surface_properties(0, kUnknown_SkPixelGeometry);
+
+    auto gpuSurface = SkSurface::MakeFromBackendRenderTarget(
+        context,                     // context
+        backendRenderTarget,         // backend render target
+        kBottomLeft_GrSurfaceOrigin, // surface origin
+        kN32_SkColorType,            // color type
+        SkColorSpace::MakeSRGB(),    // color space
+        &surface_properties,         // surface properties
+        nullptr,                     // release proc
+        nullptr                      // release context
+    );
+    if (!gpuSurface)
+    {
+        SkDebugf("SkSurface::MakeRenderTarget returned null\n");
+        // return;
+    }
+    SkCanvas *gpuCanvas = gpuSurface->getCanvas();
+    SkPaint paint;
+    paint.setAntiAlias(true);
+
+    std::cout << "MakeFromBackendRenderTarget\n";
+
+    gpuCanvas->clear(SK_ColorTRANSPARENT);
+
+    gpuCanvas->drawCircle(SkPoint::Make(100, 100), 20, paint);
+    context->flushAndSubmit();
+
+    std::cout << "Clear\n";
 
     if (eglSwapBuffers(this->egl_display, this->egl_surface) == EGL_FALSE)
     {
+    }
+
+    while (true)
+    {
+        wl_display_dispatch(display);
     }
 }
