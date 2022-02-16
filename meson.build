@@ -13,4 +13,7 @@ src = [
     'xdg-shell-protocol.c'
 ]
 
-executable('cairo', src, dependencies: [wayland_egl, wayland_client, wl_roots, egl, glesv2, cairo])
+skia = declare_dependency(link_args : ['-L/home/john/skia/out/Static', '-lskia'],
+                               include_directories : ['./thirdparty/skia'])
+
+executable('cairo', src, dependencies: [wayland_egl, wayland_client, wl_roots, egl, glesv2, cairo, skia])

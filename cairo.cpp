@@ -11,6 +11,8 @@
 
 #include <egl.hpp>
 
+#include <include/core/SkCanvas.h>
+
 #include "xdg-shell-client-protocol.h"
 
 /* Wayland code */
@@ -136,7 +138,8 @@ void RegistryProvider::setup()
 
 int main(int argc, char *argv[])
 {
-    std::cout << "Start\n";
+    std::cout
+        << "Start\n";
     RegistryProvider *provider = new RegistryProvider;
     provider->setup();
 
