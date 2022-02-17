@@ -16,11 +16,12 @@ public:
     EGLContext egl_context;
 
     EGLSurface egl_surface;
+    EGLSurface secondarySurface;
 
     wl_egl_window *egl_window;
 
     void
-    create_window(struct wl_display *display, struct wl_surface *surface);
+    create_window(int32_t width, int32_t height, struct wl_display *display, struct wl_surface *surface);
 
     void init_cairo();
 };

@@ -38,9 +38,10 @@ const EGLint context_attributes[] = {
     EGL_NONE,
 };
 
-void EGLProvider::create_window(struct wl_display *display, struct wl_surface *surface)
+void EGLProvider::create_window(int32_t width, int32_t height, struct wl_display *display, struct wl_surface *surface)
 {
-    this->egl_window = wl_egl_window_create(surface, 500, 500);
+    std::cout << "width: " << width << " height: " << height << "\n";
+    this->egl_window = wl_egl_window_create(surface, width, height);
 
     const char *client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
@@ -106,7 +107,6 @@ void EGLProvider::create_window(struct wl_display *display, struct wl_surface *s
 
     GrGLGetProc get_proc = [](void *context, const char name[]) -> GrGLFuncPtr
     {
-        std::cout << name << "\n";
         return eglGetProcAddress(name);
     };
 
@@ -121,7 +121,7 @@ void EGLProvider::create_window(struct wl_display *display, struct wl_surface *s
 
     SkColorType colorType;
     colorType = kRGBA_8888_SkColorType;
-    GrBackendRenderTarget backendRenderTarget(500, 500,
+    GrBackendRenderTarget backendRenderTarget(width, height,
                                               0, // sample count
                                               0, // stencil bits
                                               framebufferInfo);
@@ -138,20 +138,30 @@ void EGLProvider::create_window(struct wl_display *display, struct wl_surface *s
         nullptr,                     // release proc
         nullptr                      // release context
     );
+
     if (!gpuSurface)
     {
         SkDebugf("SkSurface::MakeRenderTarget returned null\n");
         // return;
     }
+
     SkCanvas *gpuCanvas = gpuSurface->getCanvas();
     SkPaint paint;
     paint.setAntiAlias(true);
 
-    std::cout << "MakeFromBackendRenderTarget\n";
+    const SkImageInfo info = SkImageInfo::MakeN32(100, 100, kPremul_SkAlphaType);
+    auto gpuSurface2 = SkSurface::MakeRenderTarget(context, SkBudgeted::kYes, info);
+    SkCanvas *gpuCanvas2 = gpuSurface2->getCanvas();
+    SkPaint paint2;
 
-    gpuCanvas->clear(SK_ColorTRANSPARENT);
+    paint2.setColor(SK_ColorBLUE);
+    gpuCanvas2->clear(SK_ColorRED);
+    gpuCanvas2->drawCircle(10, 10, 10, paint2);
 
-    gpuCanvas->drawCircle(SkPoint::Make(100, 100), 20, paint);
+    gpuCanvas->clear(SK_ColorWHITE);
+    // gpuCanvas->drawCircle(SkPoint::Make(width / 2 - 10, height / 2 - 10), 50, paint);
+    gpuSurface2->draw(gpuCanvas, 0, 0);
+
     context->flushAndSubmit();
 
     std::cout << "Clear\n";

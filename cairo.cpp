@@ -114,8 +114,11 @@ xdg_toplevel_configure_handler(void *data,
 {
     printf("configure: %dx%d\n", width, height);
     RegistryProvider *provider = static_cast<RegistryProvider *>(data);
-    provider->width = width;
-    provider->height = height;
+    if (width > 0 && height > 0)
+    {
+        provider->width = width;
+        provider->height = height;
+    }
 }
 
 static const struct xdg_toplevel_listener xdg_top_level_listener = {
@@ -164,7 +167,7 @@ void RegistryProvider::setup()
 void RegistryProvider::setup_toplevel()
 {
     EGLProvider *egl_provider = new EGLProvider;
-    egl_provider->create_window(this->wl_display, this->wl_surface);
+    egl_provider->create_window(this->width, this->height, this->wl_display, this->wl_surface);
 }
 
 int main(int argc, char *argv[])
@@ -172,6 +175,8 @@ int main(int argc, char *argv[])
     std::cout
         << "Start\n";
     RegistryProvider *provider = new RegistryProvider;
+    provider->width = 500;
+    provider->height = 500;
     provider->setup();
 
     // state.wl_surface = wl_compositor_create_surface(state.wl_compositor);
