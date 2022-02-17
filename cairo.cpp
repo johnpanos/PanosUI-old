@@ -11,6 +11,8 @@
 
 #include <egl.hpp>
 
+#include "WaylandRegistry.hpp"
+
 #include "xdg-shell-client-protocol.h"
 
 /* Wayland code */
@@ -113,12 +115,12 @@ xdg_toplevel_configure_handler(void *data,
                                struct wl_array *states)
 {
     printf("configure: %dx%d\n", width, height);
-    RegistryProvider *provider = static_cast<RegistryProvider *>(data);
-    if (width > 0 && height > 0)
-    {
-        provider->width = width;
-        provider->height = height;
-    }
+    // RegistryProvider *provider = static_cast<RegistryProvider *>(data);
+    // if (width > 0 && height > 0)
+    // {
+    //     provider->width = width;
+    //     provider->height = height;
+    // }
 }
 
 static const struct xdg_toplevel_listener xdg_top_level_listener = {
@@ -172,24 +174,42 @@ void RegistryProvider::setup_toplevel()
 
 int main(int argc, char *argv[])
 {
-    std::cout
-        << "Start\n";
-    RegistryProvider *provider = new RegistryProvider;
-    provider->width = 500;
-    provider->height = 500;
-    provider->setup();
+    struct wl_display *display = wl_display_connect(nullptr);
+    if (display == nullptr)
+    {
+        std::cout << "display is null\n";
+    }
+    WaylandXDG xdg(display);
+    xdg.registry->round_trip();
 
-    // state.wl_surface = wl_compositor_create_surface(state.wl_compositor);
+    if (xdg.registry->zwlr_layer_shell_v1 == nullptr)
+    {
+        std::cerr << "did not load layer_shell\n";
+        return -1;
+    }
 
-    // if (state.wl_surface == NULL)
-    // {
-    //     std::cerr << "Could not create surface\n";
-    //     return 1;
-    // }
+    WaylandXDGSurface xdg_surf(xdg.registry);
+    WaylandXDGSurfaceToplevel toplevel(&xdg_surf);
 
-    // state.xdg_surface = xdg_wm_base_get_xdg_surface(state.xdg_wm_base, state.wl_surface);
+    toplevel.width = 500;
+    toplevel.height = 500;
 
-    // cleanup_wayland(&state);
+    toplevel.set_title("Hello World");
+    toplevel.commit();
+    xdg.registry->round_trip();
+
+    EGLProvider *egl_provider = new EGLProvider;
+    egl_provider->create_window(toplevel.width, toplevel.height, xdg.registry->display, toplevel.wayland_xdg_surface->wayland_surface->wl_surface);
+
+    while (true)
+    {
+        wl_display_dispatch(display);
+        if (toplevel.resized)
+        {
+            egl_provider->create_window(toplevel.width, toplevel.height, xdg.registry->display, toplevel.wayland_xdg_surface->wayland_surface->wl_surface);
+            toplevel.resized = false;
+        }
+    }
 
     return 0;
 }

@@ -158,9 +158,15 @@ void EGLProvider::create_window(int32_t width, int32_t height, struct wl_display
     gpuCanvas2->clear(SK_ColorRED);
     gpuCanvas2->drawCircle(10, 10, 10, paint2);
 
-    gpuCanvas->clear(SK_ColorWHITE);
-    // gpuCanvas->drawCircle(SkPoint::Make(width / 2 - 10, height / 2 - 10), 50, paint);
-    gpuSurface2->draw(gpuCanvas, 0, 0);
+    paint.setColor(SK_ColorBLUE);
+    paint.setAlpha(255 / 2);
+    gpuCanvas->clear(SK_ColorTRANSPARENT);
+    gpuCanvas->drawRoundRect(SkRect::MakeXYWH(0, 0, width, height), 16, 16, paint);
+    paint.setAlpha(255);
+    paint.setColor(SK_ColorBLACK);
+
+    gpuCanvas->drawCircle(SkPoint::Make(width / 2 - 10, height / 2 - 10), 50, paint);
+    // gpuSurface2->draw(gpuCanvas, 0, 0);
 
     context->flushAndSubmit();
 
@@ -170,8 +176,11 @@ void EGLProvider::create_window(int32_t width, int32_t height, struct wl_display
     {
     }
 
-    while (true)
-    {
-        wl_display_dispatch(display);
-    }
+    gpuSurface.release();
+    gpuSurface2.release();
+    delete context;
+
+    eglMakeCurrent(this->egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    eglDestroySurface(this->egl_display, this->egl_surface);
+    eglDestroyContext(this->egl_display, this->egl_context);
 }

@@ -10,12 +10,14 @@ freetype = dependency('freetype2')
 glx = dependency('glx')
 
 src = [
+    'WaylandRegistry.cpp',
     'egl.cpp',
     'cairo.cpp',
-    'xdg-shell-protocol.c'
+    'xdg-shell-protocol.c',
+    'wlr-layer-shell-unstable-v1.c'
 ]
 
 skia = declare_dependency(link_args : ['-L/home/john/skia/out/linux/x64', '-lskia'],
                                include_directories : ['./thirdparty/skia'])
 
-executable('cairo', src, dependencies: [wayland_egl, wayland_client, wl_roots, egl, glesv2, fontconfig, freetype, glx, skia])
+executable('panos-client', src, dependencies: [wayland_egl, wayland_client, wl_roots, egl, glesv2, fontconfig, freetype, glx, skia])
