@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <GL/gl.h>
 
 #define SK_GL 1
@@ -26,6 +27,47 @@ public:
     };
 };
 
+class UIApplication
+{
+private:
+    UIApplication()
+    {
+        std::cout << "we are here\n";
+        display = wl_display_connect(nullptr);
+        std::cout << "we are also here\n";
+    }
+
+public:
+    sk_sp<const GrGLInterface> interface;
+    GrDirectContext *context;
+    struct wl_display *display;
+    EGLProvider egl_provider;
+    static UIApplication *getSharedInstance();
+
+    GrDirectContext *getSkiaContext()
+    {
+        if (this->interface == nullptr && this->context == nullptr)
+        {
+            std::cout << this->interface << " " << this->context << "\n";
+            std::cout << "Allocate skia\n";
+            GrGLGetProc get_proc = [](void *context, const char name[]) -> GrGLFuncPtr
+            {
+                return eglGetProcAddress(name);
+            };
+            this->interface = GrGLMakeAssembledGLESInterface(this, get_proc);
+            this->context = GrDirectContext::MakeGL(interface).release();
+        }
+
+        return context;
+    }
+};
+
+UIApplication *UIApplication::getSharedInstance()
+{
+    static UIApplication *sharedInstance = new UIApplication;
+    return sharedInstance;
+}
+
 class UILayerDelegate
 {
 public:
@@ -44,6 +86,7 @@ public:
 
     UILayer()
     {
+        this->backingSurface = nullptr;
     }
 
     virtual void render()
@@ -55,6 +98,7 @@ public:
 class UIView : public EventResponder, public UILayerDelegate
 {
 public:
+    UIView *parent;
     UILayer layer;
     std::vector<UIView *> children{};
     SkColor backgroundColor;
@@ -76,6 +120,34 @@ public:
     {
         this->children.push_back(view);
         view->next = this;
+        view->parent = this;
+    }
+
+    void removeSubview(UIView *view)
+    {
+        auto it = std::find(this->children.begin(), this->children.end(), view);
+        if (it != this->children.end())
+        {
+            view->parent = nullptr;
+            view->next = nullptr;
+            this->children.erase(it);
+        }
+    }
+
+    void set_frame(SkRect frame)
+    {
+        this->frame = frame;
+        UIApplication *app = UIApplication::getSharedInstance();
+
+        if (this->layer.backingSurface != nullptr)
+        {
+            this->layer.backingSurface->unref();
+            this->layer.backingSurface = nullptr;
+        }
+
+        const SkImageInfo info = SkImageInfo::MakeN32(frame.width(), frame.height(), kPremul_SkAlphaType);
+        this->layer.backingSurface = SkSurface::MakeRenderTarget(app->getSkiaContext(), SkBudgeted::kYes, info).release();
+        this->layer.frame = frame;
     }
 
     virtual void draw(SkSurface *surface)
@@ -100,48 +172,19 @@ public:
     {
         this->next->respond();
     }
-};
 
-class UIApplication
-{
-private:
-    UIApplication()
+    virtual void draw(SkSurface *surface)
     {
-        std::cout << "we are here\n";
-        display = wl_display_connect(nullptr);
-        std::cout << "we are also here\n";
-    }
+        SkCanvas *canvas = surface->getCanvas();
 
-public:
-    sk_sp<const GrGLInterface> interface;
-    GrDirectContext *context;
-    struct wl_display *display;
-    EGLProvider egl_provider;
-    static UIApplication &getSharedInstance();
+        SkPaint paint;
+        paint.setColor(SK_ColorRED);
+        paint.setAlpha(255);
+        canvas->drawCircle(SkPoint::Make(frame.width() / 2, frame.height() / 2), 50, paint);
 
-    GrDirectContext *getSkiaContext()
-    {
-        if (this->interface == nullptr && this->context == nullptr)
-        {
-            std::cout << this->interface << " " << this->context << "\n";
-            std::cout << "Allocate skia\n";
-            GrGLGetProc get_proc = [](void *context, const char name[]) -> GrGLFuncPtr
-            {
-                return eglGetProcAddress(name);
-            };
-            this->interface = GrGLMakeAssembledGLESInterface(this, get_proc);
-            this->context = GrDirectContext::MakeGL(interface).release();
-        }
-
-        return context;
+        surface->flush();
     }
 };
-
-UIApplication &UIApplication::getSharedInstance()
-{
-    static UIApplication sharedInstance;
-    return sharedInstance;
-}
 
 class UIWindow
 {
@@ -172,9 +215,7 @@ public:
         xdg->registry->round_trip();
 
         this->egl_window = wl_egl_window_create(toplevel->wl_surface, toplevel->height, toplevel->width);
-
         application->egl_provider.setup(application->display);
-
         this->egl_surface = eglCreateWindowSurface(application->egl_provider.egl_display, application->egl_provider.egl_config, this->egl_window, nullptr);
 
         if (this->egl_surface == EGL_NO_SURFACE)
@@ -202,21 +243,6 @@ public:
                                                   framebufferInfo);
 
         SkSurfaceProps surface_properties(0, kUnknown_SkPixelGeometry);
-
-        this->surface = SkSurface::MakeFromBackendRenderTarget(
-                            application->getSkiaContext(), // context
-                            backendRenderTarget,           // backend render target
-                            kBottomLeft_GrSurfaceOrigin,   // surface origin
-                            kN32_SkColorType,              // color type
-                            SkColorSpace::MakeSRGB(),      // color space
-                            &surface_properties,           // surface properties
-                            nullptr,                       // release proc
-                            nullptr                        // release context
-                            )
-                            .release();
-
-        this->surface->getCanvas()->clear(SK_ColorGRAY);
-        application->getSkiaContext()->flushAndSubmit();
 
         this->on_resize(0, 0);
     }
@@ -261,13 +287,6 @@ public:
 
     void render(UIView *view)
     {
-        this->surface->getCanvas()->clear(SK_ColorGRAY);
-
-        if (view != nullptr)
-        {
-            view->layer.backingSurface->draw(this->surface->getCanvas(), 0, 0);
-        }
-
         application->getSkiaContext()->flushAndSubmit();
 
         if (eglSwapBuffers(application->egl_provider.egl_display, this->egl_surface) == EGL_FALSE)
@@ -279,29 +298,48 @@ public:
 
 int main()
 {
-    UIApplication application = UIApplication::getSharedInstance();
-    std::cout << "before window\n";
-    UIWindow window(&application);
+    UIApplication *application = UIApplication::getSharedInstance();
+    UIWindow window(application);
     window.render(nullptr);
 
-    UIView *view1 = new UIView;
-    MyView *view2 = new MyView;
-    view2->frame = SkRect::MakeXYWH(0, 0, 100, 100);
-    view2->layer.frame = SkRect::MakeXYWH(0, 0, 100, 100);
+    MyView *view1 = new MyView;
+    view1->set_frame(SkRect::MakeXYWH(0, 0, 100, 100));
 
-    const SkImageInfo info = SkImageInfo::MakeN32(100, 100, kPremul_SkAlphaType);
-    std::cout << "get skia context\n";
-    view2->layer.backingSurface = SkSurface::MakeRenderTarget(application.getSkiaContext(), SkBudgeted::kYes, info).release();
-    view2->backgroundColor = SK_ColorBLUE;
-    view2->layer.render();
+    MyView *view2 = new MyView;
+    view2->set_frame(SkRect::MakeXYWH(200, 200, 100, 100));
+
+    view1->addSubView(view2);
 
     while (true)
     {
-        wl_display_dispatch(application.display);
+
+        std::queue<UIView *> view_queue;
+
+        view_queue.push(view1);
+
+        wl_display_dispatch(application->display);
         if (window.toplevel->resized)
         {
             window.on_resize(window.toplevel->width, window.toplevel->height);
-            window.render(view2);
+            view1->set_frame(SkRect::MakeXYWH(0, 0, window.toplevel->width, 100));
+
+            window.surface->getCanvas()->clear(SK_ColorBLACK);
+
+            while (!view_queue.empty())
+            {
+                UIView *view = view_queue.front();
+                view_queue.pop();
+
+                view->layer.render();
+                view->layer.backingSurface->draw(window.surface->getCanvas(), view->frame.x(), view->frame.y());
+
+                for (UIView *view : view->children)
+                {
+                    view_queue.push(view);
+                }
+            }
+
+            window.render(nullptr);
             window.toplevel->resized = false;
         }
     }

@@ -198,7 +198,6 @@ public:
         size_t array_size = wl_array->size / sizeof(uint32_t);
         for (size_t i = 0; i < array_size; i++)
         {
-            std::cout << data[i];
             if (data[i] == value)
                 return true;
         }
