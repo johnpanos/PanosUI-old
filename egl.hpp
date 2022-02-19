@@ -41,7 +41,7 @@ public:
     sk_sp<SkSurface> surface;
 
     void
-    setup(struct wl_display *display, struct wl_surface *surface, int initial_width, int initial_height);
+    setup(struct wl_display *display);
 
     void on_resize(int32_t width, int32_t height);
 

@@ -10,6 +10,7 @@ freetype = dependency('freetype2')
 glx = dependency('glx')
 
 src = [
+    'main.cpp',
     'WaylandRegistry.cpp',
     'WaylandPointer.cpp',
     'egl.cpp',

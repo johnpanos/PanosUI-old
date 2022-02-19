@@ -38,10 +38,10 @@ const EGLint context_attributes[] = {
     EGL_NONE,
 };
 
-void EGLProvider::setup(struct wl_display *display, struct wl_surface *surface, int initial_width, int initial_height)
+void EGLProvider::setup(struct wl_display *display)
 {
-    std::cout << "width: " << initial_width << " height: " << initial_height << "\n";
-    this->egl_window = wl_egl_window_create(surface, initial_width, initial_width);
+    // std::cout << "width: " << initial_width << " height: " << initial_height << "\n";
+    // this->egl_window = wl_egl_window_create(surface, initial_width, initial_width);
 
     const char *client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
@@ -91,27 +91,6 @@ void EGLProvider::setup(struct wl_display *display, struct wl_surface *surface, 
         std::cerr << "Failed to create EGL context\n";
         return;
     }
-
-    this->egl_surface = eglCreateWindowSurface(this->egl_display, this->egl_config, this->egl_window, nullptr);
-
-    if (this->egl_surface == EGL_NO_SURFACE)
-    {
-        std::cerr << "Failed to create EGL window surface\n";
-        return;
-    }
-
-    if (eglMakeCurrent(this->egl_display, this->egl_surface, this->egl_surface, egl_context) == EGL_FALSE)
-    {
-        std::cerr << eglGetError() << " Brokey\n";
-    }
-
-    GrGLGetProc get_proc = [](void *context, const char name[]) -> GrGLFuncPtr
-    {
-        return eglGetProcAddress(name);
-    };
-
-    this->interface = GrGLMakeAssembledGLESInterface(this, get_proc);
-    this->context = GrDirectContext::MakeGL(interface).release();
 }
 
 void EGLProvider::on_resize(int32_t width, int32_t height)
@@ -129,7 +108,7 @@ void EGLProvider::on_resize(int32_t width, int32_t height)
     GrGLFramebufferInfo framebufferInfo;
     framebufferInfo.fFBOID = 0; // assume default framebuffer
     // We are always using OpenGL and we use RGBA8 internal format for both RGBA and BGRA configs in OpenGL.
-    //(replace line below with this one to enable correct color spaces) framebufferInfo.fFormat = GL_SRGB8_ALPHA8;
+    // framebufferInfo.fFormat = GL_SRGB8_ALPHA8;
     framebufferInfo.fFormat = GL_RGBA8;
 
     SkColorType colorType;
@@ -162,15 +141,6 @@ void EGLProvider::draw(int x, int y)
     SkCanvas *gpuCanvas = this->surface->getCanvas();
     SkPaint paint;
     paint.setAntiAlias(true);
-
-    // const SkImageInfo info = SkImageInfo::MakeN32(100, 100, kPremul_SkAlphaType);
-    // auto gpuSurface2 = SkSurface::MakeRenderTarget(context, SkBudgeted::kYes, info);
-    // SkCanvas *gpuCanvas2 = gpuSurface2->getCanvas();
-    // SkPaint paint2;
-
-    // paint2.setColor(SK_ColorBLUE);
-    // gpuCanvas2->clear(SK_ColorRED);
-    // gpuCanvas2->drawCircle(10, 10, 10, paint2);
 
     gpuCanvas->clear(SK_ColorWHITE);
 
