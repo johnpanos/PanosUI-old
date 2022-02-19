@@ -11,6 +11,10 @@ glx = dependency('glx')
 
 src = [
     'main.cpp',
+    'UIApplication.cpp',
+    'UIWindow.cpp',
+    'UILayer.cpp',
+    'UIView.cpp',
     'WaylandRegistry.cpp',
     'WaylandPointer.cpp',
     'egl.cpp',
