@@ -11,6 +11,7 @@ glx = dependency('glx')
 
 src = [
     'WaylandRegistry.cpp',
+    'WaylandPointer.cpp',
     'egl.cpp',
     'cairo.cpp',
     'xdg-shell-protocol.c',

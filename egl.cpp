@@ -38,10 +38,10 @@ const EGLint context_attributes[] = {
     EGL_NONE,
 };
 
-void EGLProvider::create_window(int32_t width, int32_t height, struct wl_display *display, struct wl_surface *surface)
+void EGLProvider::setup(struct wl_display *display, struct wl_surface *surface, int initial_width, int initial_height)
 {
-    std::cout << "width: " << width << " height: " << height << "\n";
-    this->egl_window = wl_egl_window_create(surface, width, height);
+    std::cout << "width: " << initial_width << " height: " << initial_height << "\n";
+    this->egl_window = wl_egl_window_create(surface, initial_width, initial_width);
 
     const char *client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
@@ -110,8 +110,21 @@ void EGLProvider::create_window(int32_t width, int32_t height, struct wl_display
         return eglGetProcAddress(name);
     };
 
-    sk_sp<const GrGLInterface> interface = GrGLMakeAssembledGLESInterface(this, get_proc);
-    GrDirectContext *context = GrDirectContext::MakeGL(interface).release();
+    this->interface = GrGLMakeAssembledGLESInterface(this, get_proc);
+    this->context = GrDirectContext::MakeGL(interface).release();
+}
+
+void EGLProvider::on_resize(int32_t width, int32_t height)
+{
+    this->width = width;
+    this->height = height;
+    wl_egl_window_resize(this->egl_window, width, height, 0, 0);
+
+    if (this->surface != nullptr)
+    {
+        delete this->surface.release();
+        this->surface = nullptr;
+    }
 
     GrGLFramebufferInfo framebufferInfo;
     framebufferInfo.fFBOID = 0; // assume default framebuffer
@@ -121,14 +134,14 @@ void EGLProvider::create_window(int32_t width, int32_t height, struct wl_display
 
     SkColorType colorType;
     colorType = kRGBA_8888_SkColorType;
-    GrBackendRenderTarget backendRenderTarget(width, height,
+    GrBackendRenderTarget backendRenderTarget(this->width, this->height,
                                               0, // sample count
                                               0, // stencil bits
                                               framebufferInfo);
 
     SkSurfaceProps surface_properties(0, kUnknown_SkPixelGeometry);
 
-    auto gpuSurface = SkSurface::MakeFromBackendRenderTarget(
+    this->surface = SkSurface::MakeFromBackendRenderTarget(
         context,                     // context
         backendRenderTarget,         // backend render target
         kBottomLeft_GrSurfaceOrigin, // surface origin
@@ -138,49 +151,41 @@ void EGLProvider::create_window(int32_t width, int32_t height, struct wl_display
         nullptr,                     // release proc
         nullptr                      // release context
     );
+}
 
-    if (!gpuSurface)
-    {
-        SkDebugf("SkSurface::MakeRenderTarget returned null\n");
-        // return;
-    }
+void EGLProvider::create_window(int32_t width, int32_t height, struct wl_display *display, struct wl_surface *surface, int x, int y)
+{
+}
 
-    SkCanvas *gpuCanvas = gpuSurface->getCanvas();
+void EGLProvider::draw(int x, int y)
+{
+    SkCanvas *gpuCanvas = this->surface->getCanvas();
     SkPaint paint;
     paint.setAntiAlias(true);
 
-    const SkImageInfo info = SkImageInfo::MakeN32(100, 100, kPremul_SkAlphaType);
-    auto gpuSurface2 = SkSurface::MakeRenderTarget(context, SkBudgeted::kYes, info);
-    SkCanvas *gpuCanvas2 = gpuSurface2->getCanvas();
-    SkPaint paint2;
+    // const SkImageInfo info = SkImageInfo::MakeN32(100, 100, kPremul_SkAlphaType);
+    // auto gpuSurface2 = SkSurface::MakeRenderTarget(context, SkBudgeted::kYes, info);
+    // SkCanvas *gpuCanvas2 = gpuSurface2->getCanvas();
+    // SkPaint paint2;
 
-    paint2.setColor(SK_ColorBLUE);
-    gpuCanvas2->clear(SK_ColorRED);
-    gpuCanvas2->drawCircle(10, 10, 10, paint2);
+    // paint2.setColor(SK_ColorBLUE);
+    // gpuCanvas2->clear(SK_ColorRED);
+    // gpuCanvas2->drawCircle(10, 10, 10, paint2);
 
-    paint.setColor(SK_ColorBLUE);
-    paint.setAlpha(255 / 2);
-    gpuCanvas->clear(SK_ColorTRANSPARENT);
-    gpuCanvas->drawRoundRect(SkRect::MakeXYWH(0, 0, width, height), 16, 16, paint);
+    gpuCanvas->clear(SK_ColorWHITE);
+
     paint.setAlpha(255);
     paint.setColor(SK_ColorBLACK);
 
     gpuCanvas->drawCircle(SkPoint::Make(width / 2 - 10, height / 2 - 10), 50, paint);
-    // gpuSurface2->draw(gpuCanvas, 0, 0);
+
+    paint.setColor(SK_ColorBLUE);
+    paint.setAlpha(255 / 2);
+    gpuCanvas->drawRoundRect(SkRect::MakeXYWH(x, y, 100, 100), 16, 16, paint);
 
     context->flushAndSubmit();
-
-    std::cout << "Clear\n";
 
     if (eglSwapBuffers(this->egl_display, this->egl_surface) == EGL_FALSE)
     {
     }
-
-    gpuSurface.release();
-    gpuSurface2.release();
-    delete context;
-
-    eglMakeCurrent(this->egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-    eglDestroySurface(this->egl_display, this->egl_surface);
-    eglDestroyContext(this->egl_display, this->egl_context);
 }

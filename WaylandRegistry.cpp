@@ -28,15 +28,8 @@ static const struct wl_registry_listener wl_registry_listener = {
 
 WaylandRegistry::WaylandRegistry(struct wl_display *display)
 {
-    if (display == nullptr)
-    {
-        std::cout << "display is null3\n";
-    }
-    std::cout << "constructing\n";
     this->display = display;
-    std::cout << "display\n";
     this->registry = wl_display_get_registry(this->display);
-    std::cout << "get registry\n";
     wl_registry_add_listener(this->registry, &wl_registry_listener, this);
 }
 
@@ -63,6 +56,10 @@ void WaylandXDGRegistry::global(void *data, struct wl_registry *wl_registry,
     {
         this->wl_compositor = static_cast<struct wl_compositor *>(
             wl_registry_bind(wl_registry, name, &wl_compositor_interface, 4));
+    }
+    else if (strcmp(interface, wl_seat_interface.name) == 0)
+    {
+        this->wl_seat = static_cast<struct wl_seat *>(wl_registry_bind(wl_registry, name, &wl_seat_interface, 7));
     }
     else if (strcmp(interface, xdg_wm_base_interface.name) == 0)
     {
@@ -95,10 +92,9 @@ static const struct xdg_surface_listener xdg_surface_listener = {
     .configure = xdg_surface_configure,
 };
 
-WaylandXDGSurface::WaylandXDGSurface(WaylandXDGRegistry *registry)
+WaylandXDGSurface::WaylandXDGSurface(WaylandXDGRegistry *registry) : WaylandSurface(registry)
 {
-    this->wayland_surface = new WaylandSurface(registry);
-    this->xdg_surface = xdg_wm_base_get_xdg_surface(registry->xdg_wm_base, this->wayland_surface->wl_surface);
+    this->xdg_surface = xdg_wm_base_get_xdg_surface(registry->xdg_wm_base, this->wl_surface);
     xdg_surface_add_listener(this->xdg_surface, &xdg_surface_listener, this);
 }
 
@@ -117,9 +113,8 @@ static const struct xdg_toplevel_listener xdg_top_level_listener = {
     .configure = xdg_toplevel_configure_handler,
 };
 
-WaylandXDGSurfaceToplevel::WaylandXDGSurfaceToplevel(WaylandXDGSurface *surf)
+WaylandXDGSurfaceToplevel::WaylandXDGSurfaceToplevel(WaylandXDGRegistry *registry) : WaylandXDGSurface(registry)
 {
-    this->wayland_xdg_surface = surf;
-    this->xdg_toplevel = this->wayland_xdg_surface->get_toplevel();
+    this->xdg_toplevel = this->get_toplevel();
     xdg_toplevel_add_listener(this->xdg_toplevel, &xdg_top_level_listener, this);
 }
