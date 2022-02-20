@@ -13,12 +13,12 @@ src = [
     'main.cpp',
     'UIApplication.cpp',
     'UIWindow.cpp',
+    'UIEventResponder.cpp',
     'UILayer.cpp',
     'UIView.cpp',
     'WaylandRegistry.cpp',
     'WaylandPointer.cpp',
     'egl.cpp',
-    'cairo.cpp',
     'xdg-shell-protocol.c',
     'wlr-layer-shell-unstable-v1.c'
 ]

@@ -95,7 +95,7 @@ void Window::draw()
 
         if (eglSwapBuffers(app->egl_provider.egl_display, this->egl_surface) == EGL_FALSE)
         {
-            std::cerr << eglGetError() << " brokeyyy\n";
+            std::cerr << eglGetError() << " Failed to swap buffers\n";
         }
 
         this->needsRepaint = false;
