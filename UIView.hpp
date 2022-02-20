@@ -4,11 +4,12 @@
 #include <vector>
 #include <include/core/SkPaint.h>
 #include <include/core/SkCanvas.h>
-#include <UILayer.hpp>
+#include "UILayer.hpp"
+#include "UIEventResponder.hpp"
 
 namespace UI
 {
-    class View : public LayerDelegate
+    class View : public LayerDelegate, public EventResponder
     {
     public:
         View(SkRect frame);
