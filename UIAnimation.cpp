@@ -63,6 +63,8 @@ void Transaction::flush()
         transactions.pop();
 
         delete transaction;
+
+        UI::Animation::AnimationCore::tick();
     }
 }
 

@@ -3,6 +3,32 @@
 #include "UIApplication.hpp"
 using namespace UI;
 
+void Window::on_mouse_click()
+{
+    std::cout << "Mouse click listener\n";
+    std::cout << "X: " << this->x << "Y: " << this->y << "\n";
+    clicked_view = this->root_view->hit_test(SkPoint::Make(this->x, this->y));
+    if (clicked_view != nullptr)
+    {
+        std::cout << "View found " << (clicked_view == this->root_view) << "\n";
+        clicked_view->on_mouse_click();
+    }
+    else
+    {
+        std::cout << "No view found";
+    }
+}
+
+void Window::on_mouse_up()
+{
+    if (clicked_view != nullptr)
+    {
+        SkPoint translated_point = this->root_view->convert(SkPoint::Make(this->x, this->y), clicked_view);
+        this->clicked_view->on_mouse_up(translated_point.x(), translated_point.y());
+        clicked_view = nullptr;
+    }
+}
+
 Window::Window(const char *title, SkRect frame)
 {
     this->needsRepaint = true;
@@ -12,6 +38,12 @@ Window::Window(const char *title, SkRect frame)
     Application *app = Application::getInstance();
     xdg = new WaylandXDG(app->display);
     wl_display_dispatch(app->display);
+
+    seat = new WaylandSeat(xdg->registry->wl_seat);
+
+    this->pointer = new WaylandPointer(xdg->registry);
+    this->pointer->delegate = this;
+    seat->add_listener(pointer);
 
     toplevel = new WaylandXDGSurfaceToplevel(xdg->registry);
     toplevel->width = this->frame.width();
@@ -39,6 +71,8 @@ Window::Window(const char *title, SkRect frame)
 void Window::on_resize(int width, int height)
 {
     this->frame = SkRect::MakeXYWH(0, 0, width, height);
+
+    std::cout << "width: " << this->frame.width() << " | height: " << this->frame.width() << "\n";
 
     Application *app = Application::getInstance();
     wl_egl_window_resize(this->egl_window, toplevel->width, toplevel->height, 0, 0);
@@ -76,12 +110,18 @@ void Window::on_resize(int width, int height)
                         nullptr                      // release context
                         )
                         .release();
+
+    if (this->root_view != nullptr)
+    {
+        this->root_view->set_frame(SkRect::MakeXYWH(0, 0, width, height));
+    }
 }
 
 void Window::draw()
 {
     if (this->toplevel->resized)
     {
+        std::cout << "resized\n";
         this->on_resize(this->toplevel->width, this->toplevel->height);
         this->toplevel->resized = false;
         this->needsRepaint = true;

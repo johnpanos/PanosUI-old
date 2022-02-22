@@ -18,6 +18,8 @@ void Layer::set_frame(SkRect frame)
     this->frame = frame;
     this->x.set(frame.x());
     this->y.set(frame.y());
+    this->width.set(frame.width());
+    this->height.set(frame.height());
 }
 
 void Layer::draw()

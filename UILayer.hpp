@@ -24,6 +24,8 @@ namespace UI
 
         Animation::AnimatableProperty x;
         Animation::AnimatableProperty y;
+        Animation::AnimatableProperty width;
+        Animation::AnimatableProperty height;
 
         bool needs_recreate;
         bool needs_repaint;

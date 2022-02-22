@@ -5,21 +5,44 @@
 #include <EGL/egl.h>
 #include <include/core/SkSurface.h>
 #include "WaylandRegistry.hpp"
+#include "WaylandPointer.hpp"
+#include "UIView.hpp"
 
 namespace UI
 {
-    class Window
+    class Window;
+
+    class WindowDelegate
     {
     public:
+        virtual void did_finish_launching(Window *window)
+        {
+            std::cout << "Finished launching\n";
+        }
+    };
+
+    class Window : public WaylandPointerDelegate
+    {
+    public:
+        WindowDelegate *delegate;
+
         EGLSurface egl_surface;
         SkSurface *surface;
         wl_egl_window *egl_window;
 
         WaylandXDG *xdg;
         WaylandXDGSurfaceToplevel *toplevel;
+
+        WaylandSeat *seat;
+        WaylandPointer *pointer;
+
         SkRect frame;
 
         bool needsRepaint;
+
+        View *root_view;
+
+        View *clicked_view;
 
         Window(const char *title, SkRect frame);
         ~Window();
@@ -27,6 +50,9 @@ namespace UI
         void on_resize(int width, int height);
         void draw();
         void run();
+
+        virtual void on_mouse_click();
+        virtual void on_mouse_up();
     };
 };
 

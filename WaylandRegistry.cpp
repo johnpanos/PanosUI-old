@@ -57,6 +57,10 @@ void WaylandXDGRegistry::global(void *data, struct wl_registry *wl_registry,
         this->wl_compositor = static_cast<struct wl_compositor *>(
             wl_registry_bind(wl_registry, name, &wl_compositor_interface, 4));
     }
+    else if (strcmp(interface, wl_shm_interface.name) == 0)
+    {
+        this->wl_shm = static_cast<struct wl_shm *>(wl_registry_bind(wl_registry, name, &wl_shm_interface, 1));
+    }
     else if (strcmp(interface, wl_seat_interface.name) == 0)
     {
         this->wl_seat = static_cast<struct wl_seat *>(wl_registry_bind(wl_registry, name, &wl_seat_interface, 7));

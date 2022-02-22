@@ -1,11 +1,12 @@
 #ifndef _WAYLANDPOINTER_H
 #define _WAYLANDPOINTER_H
-#endif
 
 #include <iostream>
 #include <vector>
 #include <functional>
 #include <wayland-client.h>
+#include <wayland-cursor.h>
+#include <WaylandRegistry.hpp>
 
 class WaylandSeatListener
 {
@@ -16,17 +17,31 @@ public:
     virtual ~WaylandSeatListener() = default;
 };
 
+class WaylandPointer;
+
+class WaylandPointerDelegate
+{
+public:
+    int x, y;
+    virtual void on_mouse_motion(int x, int y)
+    {
+        this->x = x;
+        this->y = y;
+    }
+    virtual void on_mouse_click(){};
+    virtual void on_mouse_up(){};
+};
+
 class WaylandPointer : public WaylandSeatListener
 {
-private:
-    void motion(int x, int y)
-    {
-        this->on_motion(x, y);
-    }
-
 public:
-    std::function<void(int, int)> on_motion;
+    WaylandPointerDelegate *delegate;
+    WaylandXDGRegistry *registry;
+
+    WaylandPointer(WaylandXDGRegistry *registry);
+
     struct wl_pointer *wl_pointer;
+    struct wl_surface *cursor_surface;
 
     virtual void handle_capabilities(struct wl_seat *wl_seat, uint32_t caps);
 
@@ -62,3 +77,5 @@ public:
         this->listeners.emplace_back(listener);
     }
 };
+
+#endif

@@ -6,6 +6,7 @@
 #include <include/gpu/gl/GrGLInterface.h>
 #include <include/gpu/gl/GrGLAssembleInterface.h>
 #include "egl.hpp"
+#include "UIWindow.hpp"
 
 namespace UI
 {
@@ -19,10 +20,13 @@ namespace UI
         GrDirectContext *context;
         EGLProvider egl_provider;
         struct wl_display *display;
+        Window *window;
 
         static Application *getInstance();
 
         GrDirectContext *getSkiaContext();
+
+        void run(Window *window);
     };
 };
 

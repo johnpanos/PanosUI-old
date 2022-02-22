@@ -2,6 +2,7 @@ project('PanosUI', ['cpp', 'c'])
 
 wayland_egl = dependency('wayland-egl')
 wayland_client = dependency('wayland-client')
+wayland_cursor = dependency('wayland-cursor')
 wl_roots = dependency('wlroots')
 egl = dependency('egl')
 glesv2 = dependency('glesv2')
@@ -27,4 +28,4 @@ src = [
 skia = declare_dependency(link_args : ['-L/home/john/skia/out/linux/x64', '-lskia'],
                                include_directories : ['./thirdparty/skia'])
 
-executable('panos-client', src, dependencies: [wayland_egl, wayland_client, wl_roots, egl, glesv2, fontconfig, freetype, glx, skia])
+executable('panos-client', src, dependencies: [wayland_egl, wayland_client, wayland_cursor, wl_roots, egl, glesv2, fontconfig, freetype, glx, skia])

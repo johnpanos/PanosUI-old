@@ -1,6 +1,5 @@
 #ifndef _WAYLANDREGISTRY_H
 #define _WAYLANDREGISTRY_H
-#endif
 
 #include <iostream>
 #include <wayland-client.h>
@@ -74,6 +73,7 @@ public:
     WaylandXDGRegistry(struct wl_display *display) : WaylandRegistry(display){};
 
     struct wl_compositor *wl_compositor = nullptr;
+    struct wl_shm *wl_shm = nullptr;
     struct wl_seat *wl_seat = nullptr;
     struct xdg_wm_base *xdg_wm_base = nullptr;
     struct zwlr_layer_shell_v1 *zwlr_layer_shell_v1 = nullptr;
@@ -235,3 +235,5 @@ public:
         }
     }
 };
+
+#endif

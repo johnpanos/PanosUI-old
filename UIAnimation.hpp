@@ -68,6 +68,11 @@ namespace UI::Animation
             return 0.5 * (1 + sin(3.1415926 * (t - 0.5)));
         }
 
+        double lerp(double a, double b, double t)
+        {
+            return a + (t * (b - a));
+        }
+
         virtual void tick(int64_t now)
         {
             if (!finished)
@@ -85,7 +90,7 @@ namespace UI::Animation
                 {
                     double dt = (double)delta / (double)length;
                     double prog = easeInOutSine(dt);
-                    this->property->value = (int)((this->end) * prog);
+                    this->property->value = (int)(lerp((double)this->start, (double)this->end, prog));
                 }
             }
         };
