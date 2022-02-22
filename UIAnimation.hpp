@@ -5,6 +5,7 @@
 #include <iostream>
 #include <queue>
 #include <chrono>
+#include <cmath>
 
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
@@ -52,6 +53,21 @@ namespace UI::Animation
             end_time = millisec_since_epoch + length;
         }
 
+        double easeInSine(double t)
+        {
+            return sin(1.5707963 * t);
+        }
+
+        double easeInOutCubic(double t)
+        {
+            return t < 0.5 ? 4 * t * t * t : 1 + (--t) * (2 * (--t)) * (2 * t);
+        }
+
+        double easeInOutSine(double t)
+        {
+            return 0.5 * (1 + sin(3.1415926 * (t - 0.5)));
+        }
+
         virtual void tick(int64_t now)
         {
             if (!finished)
@@ -67,9 +83,9 @@ namespace UI::Animation
                 int64_t delta = now - start_time;
                 if (delta != 0)
                 {
-                    float dt = (float)delta / (float)length;
-                    printf("dt: %f\n", dt);
-                    this->property->value = (int)(this->start + (this->end * dt));
+                    double dt = (double)delta / (double)length;
+                    double prog = easeInOutSine(dt);
+                    this->property->value = (int)((this->end) * prog);
                 }
             }
         };

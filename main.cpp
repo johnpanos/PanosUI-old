@@ -37,7 +37,7 @@ int main()
 
     UI::Animation::Transaction::begin();
     UI::Animation::Transaction::set_duration(1000);
-    view2->set_frame(SkRect::MakeXYWH(100, 100, 100, 100));
+    view2->set_frame(SkRect::MakeXYWH(500, 150, 100, 100));
     UI::Animation::Transaction::commit();
 
     while (true)
