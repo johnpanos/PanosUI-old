@@ -6,6 +6,49 @@
 #include "UIView.hpp"
 #include "UIAnimation.hpp"
 
+#include <include/core/SkFont.h>
+#include <include/core/SkTextBlob.h>
+
+class Label : public UI::View
+{
+    using UI::View::View;
+
+    std::string value;
+    SkRect text_bounds;
+    SkFont font;
+
+public:
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
+
+        font = SkFont(nullptr, 48.0f, 1.0f, 0.0f);
+        (void)font.measureText(value.c_str(), strlen(value.c_str()), SkTextEncoding::kUTF8, &this->text_bounds);
+
+        std::cout << "X: " << text_bounds.x() << " Y: " << text_bounds.y() << " W: " << text_bounds.width() << " H: " << text_bounds.height() << "\n";
+
+        this->set_frame(SkRect::MakeXYWH(this->frame.x(), this->frame.y(), text_bounds.width(), text_bounds.height()));
+    }
+
+    void set_value(std::string str)
+    {
+        this->value = str;
+    }
+
+    virtual void draw(UI::Layer *layer)
+    {
+        UI::View::draw(layer);
+
+        SkCanvas *canvas = layer->backing_surface->getCanvas();
+
+        SkPaint paint;
+        paint.setColor(SK_ColorBLACK);
+
+        font.setSubpixel(true);
+        canvas->drawSimpleText(this->value.c_str(), strlen(this->value.c_str()), SkTextEncoding::kUTF8, -text_bounds.x(), -text_bounds.y(), font, paint);
+    }
+};
+
 class CircleView : public UI::View
 {
     using UI::View::View;
@@ -66,8 +109,8 @@ public:
     UI::View *green_view;
     CircleView *circle_view;
 
-    static const int WIDTH = 51 * 2;
-    static const int HEIGHT = 31 * 2;
+    static const int WIDTH = 51;
+    static const int HEIGHT = 31;
 
     virtual void
     view_did_load()
@@ -75,6 +118,7 @@ public:
         UI::View::view_did_load();
 
         this->set_frame(SkRect::MakeXYWH(0, 0, WIDTH, HEIGHT));
+
         this->background_radius.set(31);
 
         // gray
@@ -111,6 +155,19 @@ public:
         UI::View::animate(300, animation_lambda);
     }
 
+    virtual void on_mouse_click()
+    {
+        std::cout << "new mouse down\n";
+        // auto animation_lambda = [this]()
+        // {
+        //     SkRect new_frame = this->circle_view->frame;
+        //     new_frame.setXYWH(new_frame.x(), new_frame.y(), new_frame.width() * 1.1, new_frame.height());
+        //     this->circle_view->set_frame(new_frame);
+        // };
+
+        // UI::View::animate(150, animation_lambda);
+    }
+
     virtual void on_mouse_up(int x, int y)
     {
         std::cout << "Click from UISwitch!\n";
@@ -118,6 +175,17 @@ public:
         {
             this->toggle();
         }
+        // else
+        // {
+        //     auto animation_lambda = [this]()
+        //     {
+        //         SkRect new_frame = this->circle_view->frame;
+        //         new_frame.setXYWH(new_frame.x(), new_frame.y(), new_frame.height(), new_frame.height());
+        //         this->circle_view->set_frame(new_frame);
+        //     };
+
+        //     UI::View::animate(150, animation_lambda);
+        // }
     }
 };
 
@@ -128,6 +196,9 @@ class MyWindowDelegate : public UI::WindowDelegate
         UI::View *root_view = new UI::View(SkRect::MakeXYWH(0, 0, 500, 500));
         MyView *view = new MyView(SkRect::MakeXYWH(0, 0, 50, 50));
         root_view->add_subview(view);
+        Label *label = new Label(SkRect::MakeXYWH(0, 100, 100, 100));
+        label->set_value("Airplane Mode");
+        root_view->add_subview(label);
 
         window->root_view = root_view;
     }
