@@ -2,6 +2,7 @@
 #define _UILayer_H
 
 #include <include/core/SkSurface.h>
+#include "UIAnimation.hpp"
 
 namespace UI
 {
@@ -20,6 +21,9 @@ namespace UI
         SkSurface *backing_surface;
         SkRect frame;
         SkRect bounds;
+
+        Animation::AnimatableProperty x;
+        Animation::AnimatableProperty y;
 
         bool needs_recreate;
         bool needs_repaint;

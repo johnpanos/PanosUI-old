@@ -6,8 +6,11 @@ View::View(SkRect frame)
 {
     this->frame = frame;
     this->bounds = frame;
+
     this->backgroundColor = SK_ColorWHITE;
     this->needs_repaint = true;
+
+    // Create backing layer
     this->layer = new Layer();
     this->layer->set_frame(frame);
     this->layer->delegate = this;
@@ -28,7 +31,7 @@ void View::set_bounds(SkRect bounds)
 void View::add_subview(View *view)
 {
     this->children.push_back(view);
-    // view->next = this;
+    view->next = this;
     view->parent = this;
 }
 
@@ -42,10 +45,10 @@ void View::remove_subview(View *view)
             view->parent = nullptr;
         }
 
-        // if (view->next == this)
-        // {
-        //     view->next = nullptr;
-        // }
+        if (view->next == this)
+        {
+            view->next = nullptr;
+        }
 
         this->children.erase(it);
     }

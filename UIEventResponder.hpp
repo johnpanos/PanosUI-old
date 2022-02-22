@@ -5,9 +5,12 @@ namespace UI
 {
     class EventResponder
     {
+    public:
         EventResponder *next;
 
         virtual void respond();
+
+        virtual ~EventResponder(){};
     };
 };
 

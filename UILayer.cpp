@@ -16,6 +16,8 @@ void Layer::set_frame(SkRect frame)
     this->needs_recreate = true;
     this->needs_repaint = true;
     this->frame = frame;
+    this->x.set(frame.x());
+    this->y.set(frame.y());
 }
 
 void Layer::draw()
