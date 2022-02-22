@@ -3,6 +3,7 @@
 #include "UIAnimation.hpp"
 #include "UIView.hpp"
 #include <iostream>
+#include <unistd.h>
 
 using namespace UI;
 
@@ -15,7 +16,7 @@ GrDirectContext *Application::getSkiaContext()
 {
     if (this->interface == nullptr && this->context == nullptr)
     {
-        std::cout << "making skia context\n";
+        // std::cout << "making skia context\n";
         GrGLGetProc get_proc = [](void *context, const char name[]) -> GrGLFuncPtr
         {
             return eglGetProcAddress(name);
@@ -33,6 +34,33 @@ Application *Application::getInstance()
     return sharedInstance;
 }
 
+void Application::render(View *view, SkPoint origin)
+{
+    if (!view->loaded)
+    {
+        view->view_did_load();
+    }
+
+    SkPoint new_origin = origin;
+    new_origin.offset(view->layer->x.get(), view->layer->y.get());
+
+    SkRect layer_frame = SkRect::MakeXYWH(view->layer->x.get(), view->layer->y.get(), view->layer->width.get(), view->layer->height.get());
+
+    if (layer_frame != view->frame || view->opacity != view->layer->opacity.get() || view->background_radius != view->layer->background_radius.get() || view->layer->needs_repaint)
+    {
+        view->layer->needs_repaint = true;
+        view->layer->draw();
+        view->layer->needs_repaint = false;
+    }
+
+    view->layer->backing_surface->draw(this->window->surface->getCanvas(), new_origin.x(), new_origin.y());
+
+    for (UI::View *view : view->children)
+    {
+        this->render(view, new_origin);
+    }
+}
+
 void Application::run(Window *window)
 {
     this->window = window;
@@ -44,46 +72,19 @@ void Application::run(Window *window)
         wl_display_dispatch(this->display);
 
         UI::Animation::Transaction::begin();
-        window->needsRepaint = true;
-        std::queue<UI::View *> view_queue;
-        view_queue.push(window->root_view);
-
-        window->surface->getCanvas()->clear(SK_ColorWHITE);
-
-        while (!view_queue.empty())
+        if (UI::Animation::AnimationCore::animations.size() > 0)
         {
-            UI::View *view = view_queue.front();
-            view_queue.pop();
-            if (!view->loaded)
-            {
-                view->view_did_load();
-            }
+            window->needsRepaint = true;
+            window->surface->getCanvas()->clear(SK_ColorWHITE);
 
-            view->needs_repaint = true;
+            this->render(window->root_view, SkPoint::Make(window->root_view->frame.x(), window->root_view->frame.y()));
 
-            view->layer->draw();
-
-            int global_x = 0;
-            int global_y = 0;
-
-            UI::View *parent = view->parent;
-            while (parent != nullptr)
-            {
-                global_x += parent->frame.x();
-                global_y += parent->frame.y();
-                parent = parent->parent;
-            }
-
-            view->layer->backing_surface->draw(window->surface->getCanvas(), global_x + view->layer->x.get(), global_y + view->layer->y.get());
-
-            for (UI::View *view : view->children)
-            {
-                view_queue.push(view);
-            }
+            window->draw();
         }
 
-        window->draw();
         UI::Animation::Transaction::flush();
+
+        sleep(.16);
     }
 }
 

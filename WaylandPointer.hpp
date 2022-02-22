@@ -68,12 +68,12 @@ public:
 
     void handle_name(struct wl_seat *wl_seat, const char *name)
     {
-        std::cout << "Name: " << name << "\n";
+        // std::cout << "Name: " << name << "\n";
     }
 
     void add_listener(WaylandSeatListener *listener)
     {
-        std::cout << "Adding listener\n";
+        // std::cout << "Adding listener\n";
         this->listeners.emplace_back(listener);
     }
 };

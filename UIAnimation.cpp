@@ -21,7 +21,7 @@ std::vector<Animation *> AnimationCore::animations = std::vector<Animation *>();
 
 void Transaction::begin()
 {
-    // std::cout << "Beginning transaction\n";
+    // // std::cout << "Beginning transaction\n";
     Transaction *transaction = new Transaction;
     transaction->duration = 0;
     transactions.push(transaction);
@@ -55,7 +55,7 @@ void Transaction::commit()
 
 void Transaction::flush()
 {
-    // std::cout << "Flushing transactions\n";
+    // // std::cout << "Flushing transactions\n";
     while (!transactions.empty())
     {
         Transaction *transaction = transactions.top();
@@ -76,7 +76,7 @@ void Transaction::set_duration(int64_t duration)
 
 void Transaction::add_animation_for_property(AnimatableProperty *property, int start, int end)
 {
-    // std::cout << "Starting new animation\n";
+    // // std::cout << "Starting new animation\n";
     Transaction *transaction = transactions.top();
     Animation *animation = new Animation();
     animation->property = property;

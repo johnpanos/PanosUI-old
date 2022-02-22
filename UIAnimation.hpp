@@ -77,7 +77,7 @@ namespace UI::Animation
         {
             if (!finished)
             {
-                std::cout << "start: " << this->start << " | now: " << this->property->value << " | " << this->end << "\n";
+                // std::cout << "start: " << this->start << " | now: " << this->property->value << " | " << this->end << "\n";
                 if (now >= this->end_time)
                 {
                     this->property->value = end;
@@ -132,9 +132,10 @@ namespace UI::Animation
 
     class AnimationCore
     {
-        static std::vector<Animation *> animations;
 
     public:
+        static std::vector<Animation *> animations;
+
         static void add_animations(std::vector<Animation *> animations_to_add)
         {
             for (Animation *animation : animations_to_add)
@@ -147,13 +148,13 @@ namespace UI::Animation
         static void tick()
         {
             auto millisec_since_epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-            // std::cout << "Size: " << animations.size() << "\n";
+            // // std::cout << "Size: " << animations.size() << "\n";
             for (auto it = animations.begin(); it != animations.end();)
             {
                 Animation *animation = *it;
                 if (animation->finished)
                 {
-                    std::cout << "Erase\n";
+                    // std::cout << "Erase\n";
                     it = animations.erase(it);
                 }
                 else

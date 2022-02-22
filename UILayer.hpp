@@ -27,6 +27,9 @@ namespace UI
         Animation::AnimatableProperty width;
         Animation::AnimatableProperty height;
 
+        Animation::AnimatableProperty background_radius;
+        Animation::AnimatableProperty opacity;
+
         bool needs_recreate;
         bool needs_repaint;
 

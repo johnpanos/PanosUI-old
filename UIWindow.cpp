@@ -1,21 +1,40 @@
 #include <GL/gl.h>
 #include "UIWindow.hpp"
 #include "UIApplication.hpp"
+#include "UIAnimation.hpp"
 using namespace UI;
+
+void Window::on_mouse_motion(int x, int y)
+{
+    WaylandPointerDelegate::on_mouse_motion(x, y);
+    UI::View *new_hovered_view = this->root_view->hit_test(SkPoint::Make(x, y));
+    if (new_hovered_view != nullptr)
+    {
+        if (new_hovered_view != hovered_view)
+        {
+            if (hovered_view != nullptr)
+            {
+                hovered_view->on_mouse_exit();
+            }
+            new_hovered_view->on_mouse_enter();
+            hovered_view = new_hovered_view;
+        }
+    }
+}
 
 void Window::on_mouse_click()
 {
-    std::cout << "Mouse click listener\n";
-    std::cout << "X: " << this->x << "Y: " << this->y << "\n";
+    // std::cout << "Mouse click listener\n";
+    // std::cout << "X: " << this->x << "Y: " << this->y << "\n";
     clicked_view = this->root_view->hit_test(SkPoint::Make(this->x, this->y));
     if (clicked_view != nullptr)
     {
-        std::cout << "View found " << (clicked_view == this->root_view) << "\n";
+        // std::cout << "View found " << (clicked_view == this->root_view) << "\n";
         clicked_view->on_mouse_click();
     }
     else
     {
-        std::cout << "No view found";
+        // std::cout << "No view found";
     }
 }
 
@@ -72,14 +91,14 @@ void Window::on_resize(int width, int height)
 {
     this->frame = SkRect::MakeXYWH(0, 0, width, height);
 
-    std::cout << "width: " << this->frame.width() << " | height: " << this->frame.width() << "\n";
+    // std::cout << "width: " << this->frame.width() << " | height: " << this->frame.width() << "\n";
 
     Application *app = Application::getInstance();
     wl_egl_window_resize(this->egl_window, toplevel->width, toplevel->height, 0, 0);
 
     if (this->surface != nullptr)
     {
-        std::cout << "delete surface\n";
+        // std::cout << "delete surface\n";
         delete this->surface;
         this->surface = nullptr;
     }
@@ -121,7 +140,7 @@ void Window::draw()
 {
     if (this->toplevel->resized)
     {
-        std::cout << "resized\n";
+        // std::cout << "resized\n";
         this->on_resize(this->toplevel->width, this->toplevel->height);
         this->toplevel->resized = false;
         this->needsRepaint = true;

@@ -30,7 +30,7 @@ public:
     {
         if (this->registry != nullptr)
         {
-            std::cout << "Removing wl_registry\n";
+            // std::cout << "Removing wl_registry\n";
             wl_registry_destroy(this->registry);
         }
     }
@@ -83,7 +83,7 @@ public:
 
     virtual ~WaylandXDGRegistry()
     {
-        std::cout << "Removing wl_compositor xdg_wm_base zwlr_layer_shell_v1\n";
+        // std::cout << "Removing wl_compositor xdg_wm_base zwlr_layer_shell_v1\n";
         if (this->wl_compositor != nullptr)
         {
             wl_compositor_destroy(this->wl_compositor);
@@ -132,7 +132,7 @@ public:
     {
         if (this->wl_surface != nullptr)
         {
-            std::cout << "Removing wl_surface\n";
+            // std::cout << "Removing wl_surface\n";
             wl_surface_destroy(this->wl_surface);
         }
     }
@@ -165,7 +165,7 @@ public:
     {
         if (this->xdg_surface != nullptr)
         {
-            std::cout << "Removing xdg_surface\n";
+            // std::cout << "Removing xdg_surface\n";
             xdg_surface_destroy(this->xdg_surface);
         }
     }
@@ -230,7 +230,7 @@ public:
     {
         if (this->xdg_toplevel != nullptr)
         {
-            std::cout << "Removing xdg_toplevel\n";
+            // std::cout << "Removing xdg_toplevel\n";
             xdg_toplevel_destroy(this->xdg_toplevel);
         }
     }

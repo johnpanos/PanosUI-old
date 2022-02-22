@@ -22,7 +22,7 @@
 //     struct wl_display *display = wl_display_connect(nullptr);
 //     if (display == nullptr)
 //     {
-//         std::cout << "display is null\n";
+//         // std::cout << "display is null\n";
 //     }
 
 //     WaylandRegistryWrapper<struct wl_display *> wrapper;
@@ -38,7 +38,7 @@
 //     WaylandPointer *pointer = new WaylandPointer;
 //     pointer->on_motion = [&x_g, &y_g, &mouse_changed](int x, int y)
 //     {
-//         // std::cout << "X: " << x << "Y: " << y << "\n";
+//         // // std::cout << "X: " << x << "Y: " << y << "\n";
 //         x_g = x;
 //         y_g = y;
 //         mouse_changed = true;

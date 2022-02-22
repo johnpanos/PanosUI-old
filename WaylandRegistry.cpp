@@ -36,7 +36,7 @@ WaylandRegistry::WaylandRegistry(struct wl_display *display)
 void WaylandRegistry::global(void *data, struct wl_registry *wl_registry,
                              uint32_t name, const char *interface, uint32_t version)
 {
-    std::cout << interface << "\n";
+    // std::cout << interface << "\n";
 }
 
 static void

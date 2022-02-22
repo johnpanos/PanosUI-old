@@ -26,6 +26,7 @@ namespace UI
 
         GrDirectContext *getSkiaContext();
 
+        void render(View *view, SkPoint origin);
         void run(Window *window);
     };
 };

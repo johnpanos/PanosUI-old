@@ -17,7 +17,7 @@ namespace UI
     public:
         virtual void did_finish_launching(Window *window)
         {
-            std::cout << "Finished launching\n";
+            // std::cout << "Finished launching\n";
         }
     };
 
@@ -42,6 +42,7 @@ namespace UI
 
         View *root_view;
 
+        View *hovered_view;
         View *clicked_view;
 
         Window(const char *title, SkRect frame);
@@ -51,6 +52,7 @@ namespace UI
         void draw();
         void run();
 
+        virtual void on_mouse_motion(int x, int y);
         virtual void on_mouse_click();
         virtual void on_mouse_up();
     };

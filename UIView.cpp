@@ -19,8 +19,8 @@ View::View(SkRect frame)
     this->bounds = frame;
 
     this->background_color = SK_ColorWHITE;
-    this->opacity.value = 255;
-    this->background_radius.value = 0;
+    this->opacity = 255;
+    this->background_radius = 0;
 
     this->needs_repaint = true;
 }
@@ -86,7 +86,7 @@ View *View::hit_test(SkPoint point)
         UI::View *view = view_queue.front();
         view_queue.pop();
 
-        std::cout << "Running hit test on " << view << "\n";
+        // std::cout << "Running hit test on " << view << "\n";
 
         SkPoint translated_point = this->convert(point, view);
 
@@ -111,8 +111,8 @@ View *View::hit_test(SkPoint point)
 
 bool View::point_inside(SkPoint point)
 {
-    std::cout << "Checking if point is inside: " << point.x() << " " << point.y() << "\n";
-    std::cout << "Bounds: " << this->bounds.width() << " " << this->bounds.height() << "\n";
+    // std::cout << "Checking if point is inside: " << point.x() << " " << point.y() << "\n";
+    // std::cout << "Bounds: " << this->bounds.width() << " " << this->bounds.height() << "\n";
     return point.x() >= 0 && point.x() <= this->bounds.width() &&
            point.y() >= 0 && point.y() <= this->bounds.height();
 }
@@ -124,8 +124,8 @@ SkPoint View::convert(SkPoint point, View *to)
     View *current_view = to;
     while (current_view != this && current_view != nullptr)
     {
-        std::cout << translated_point.x() << " - " << current_view->frame.x() << "\n";
-        std::cout << translated_point.y() << " - " << current_view->frame.y() << "\n\n";
+        // std::cout << translated_point.x() << " - " << current_view->frame.x() << "\n";
+        // std::cout << translated_point.y() << " - " << current_view->frame.y() << "\n\n";
         translated_point.set(translated_point.x() - current_view->frame.x(),
                              translated_point.y() - current_view->frame.y());
         current_view = current_view->parent;
@@ -139,13 +139,13 @@ void View::draw(Layer *layer)
     SkCanvas *canvas = layer->backing_surface->getCanvas();
     canvas->clear(SK_ColorTRANSPARENT);
 
-    if (this->opacity.get() != 0)
+    if (layer->opacity.get() != 0 && this->background_color != SK_ColorTRANSPARENT)
     {
         SkPaint paint;
         paint.setAntiAlias(true);
         paint.setColor(this->background_color);
-        paint.setAlpha(this->opacity.value);
-        canvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(0, 0, layer->width.get(), layer->height.get()), this->background_radius.get(), this->background_radius.get()), paint);
+        paint.setAlpha(layer->opacity.value);
+        canvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(0, 0, layer->width.get(), layer->height.get()), layer->background_radius.get(), layer->background_radius.get()), paint);
     }
 }
 

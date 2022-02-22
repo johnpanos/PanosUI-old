@@ -121,7 +121,7 @@ void WaylandPointer::handle_capabilities(struct wl_seat *wl_seat, uint32_t caps)
 {
     if (caps & WL_SEAT_CAPABILITY_POINTER)
     {
-        std::cout << "Has pointer\n";
+        // std::cout << "Has pointer\n";
         this->wl_pointer = wl_seat_get_pointer(wl_seat);
         wl_pointer_add_listener(this->wl_pointer, &pointer_listener, this);
     }

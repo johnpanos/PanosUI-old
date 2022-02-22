@@ -40,7 +40,7 @@ const EGLint context_attributes[] = {
 
 void EGLProvider::setup(struct wl_display *display)
 {
-    // std::cout << "width: " << initial_width << " height: " << initial_height << "\n";
+    // // std::cout << "width: " << initial_width << " height: " << initial_height << "\n";
     // this->egl_window = wl_egl_window_create(surface, initial_width, initial_width);
 
     const char *client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
@@ -69,7 +69,7 @@ void EGLProvider::setup(struct wl_display *display)
     }
     else
     {
-        std::cout << major << " " << minor << ": Initialized EGL\n";
+        // std::cout << major << " " << minor << ": Initialized EGL\n";
         if (!((major == 1 && minor >= 4) || major >= 2))
         {
             std::cerr << "Too old\n";

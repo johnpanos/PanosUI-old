@@ -27,8 +27,8 @@ namespace UI
         SkRect frame;
         SkRect bounds;
 
-        Animation::AnimatableProperty background_radius;
-        Animation::AnimatableProperty opacity;
+        int background_radius;
+        int opacity;
 
         Layer *layer;
 

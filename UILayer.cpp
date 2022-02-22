@@ -9,6 +9,9 @@ Layer::Layer()
     this->backing_surface = nullptr;
     this->needs_recreate = true;
     this->needs_repaint = true;
+
+    this->background_radius.value = 0;
+    this->opacity.value = 255;
 }
 
 void Layer::set_frame(SkRect frame)

@@ -13,6 +13,9 @@ namespace UI
         virtual void on_mouse_click();
         virtual void on_mouse_up(int x, int y);
 
+        virtual void on_mouse_enter();
+        virtual void on_mouse_exit();
+
         virtual ~EventResponder(){};
     };
 };
