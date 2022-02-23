@@ -30,6 +30,7 @@ public:
     }
     virtual void on_mouse_click(){};
     virtual void on_mouse_up(){};
+    virtual void on_mouse_scroll(bool up){};
 };
 
 class WaylandPointer : public WaylandSeatListener

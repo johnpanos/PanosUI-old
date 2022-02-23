@@ -122,6 +122,7 @@ void Application::run(Window *window)
             window->needs_layout = false;
         }
 
+        UI::Animation::Transaction::commit();
         UI::Animation::Transaction::flush();
 
         if (UI::Animation::AnimationCore::animations.size() > 0)

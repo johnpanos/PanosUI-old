@@ -59,6 +59,7 @@ namespace UI
         virtual void on_mouse_motion(int x, int y);
         virtual void on_mouse_click();
         virtual void on_mouse_up();
+        virtual void on_mouse_scroll(bool up);
     };
 };
 

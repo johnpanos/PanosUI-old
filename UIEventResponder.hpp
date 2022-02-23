@@ -19,6 +19,7 @@ namespace UI
         virtual void on_mouse_exit();
 
         virtual void on_mouse_drag(SkPoint delta);
+        virtual void on_mouse_scroll(int delta);
 
         virtual ~EventResponder(){};
     };

@@ -15,19 +15,19 @@ void Window::on_mouse_motion(int x, int y)
         return;
     }
 
-    // UI::View *new_hovered_view = this->root_view->hit_test(SkPoint::Make(x, y));
-    // if (new_hovered_view != nullptr)
-    // {
-    //     if (new_hovered_view != hovered_view)
-    //     {
-    //         if (hovered_view != nullptr)
-    //         {
-    //             hovered_view->on_mouse_exit();
-    //         }
-    //         new_hovered_view->on_mouse_enter();
-    //         hovered_view = new_hovered_view;
-    //     }
-    // }
+    UI::View *new_hovered_view = this->root_view->hit_test(SkPoint::Make(x, y));
+    if (new_hovered_view != nullptr)
+    {
+        if (new_hovered_view != hovered_view)
+        {
+            if (hovered_view != nullptr)
+            {
+                hovered_view->on_mouse_exit();
+            }
+            new_hovered_view->on_mouse_enter();
+            hovered_view = new_hovered_view;
+        }
+    }
 }
 
 void Window::on_mouse_click()
@@ -61,6 +61,18 @@ void Window::on_mouse_up()
         this->local_clicked_at.set(0, 0);
 
         clicked_view = nullptr;
+    }
+}
+
+void Window::on_mouse_scroll(bool up)
+{
+    if (hovered_view != nullptr)
+    {
+        hovered_view->on_mouse_scroll(up ? 32 : -32);
+    }
+    else
+    {
+        // std::cout << "No view found";
     }
 }
 

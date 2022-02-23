@@ -363,24 +363,34 @@ class ScrollView : public UI::View
             UI::View *view = children.at(i);
             view->set_frame(SkRect::MakeXYWH(0, height * i, this->frame.width(), 64));
         }
+        scroll_end();
     }
 
-    virtual void on_mouse_up(int x, int y)
+    int scroll_end()
     {
         int d = std::min(0, (int)(this->layer->bounds_y.get()));
         d = std::max(-(int)(height * children.size()) + 250, d);
 
         this->set_bounds(SkRect::MakeXYWH(0, d, this->bounds.width(), this->bounds.height()));
+        this->layer->bounds_y.set(d);
+    }
 
-        UI::View::animate(250, [this, &d]()
-                          { this->layer->bounds_y.set(d); });
+    virtual void on_mouse_up(int x, int y)
+    {
+        UI::View::animate(250, [this]()
+                          { this->scroll_end(); });
     }
 
     virtual void on_mouse_drag(SkPoint delta)
     {
-        std::cout << "drag delta: " << delta.x() << " " << delta.y() << "\n";
-        std::cout << "bounds_y: " << this->layer->bounds_y.get() << "\n";
         this->layer->bounds_y.set(this->bounds.y() + delta.y());
+    }
+
+    virtual void on_mouse_scroll(int delta)
+    {
+        this->layer->bounds_y.set(this->bounds.y() + delta);
+        scroll_end();
+        this->needs_repaint = true;
     }
 };
 

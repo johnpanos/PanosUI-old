@@ -59,3 +59,12 @@ void EventResponder::on_mouse_drag(SkPoint delta)
         this->next->on_mouse_drag(delta);
     }
 }
+
+void EventResponder::on_mouse_scroll(int delta)
+{
+    if (this->next != nullptr)
+    {
+        std::cout << "Passing mouse scroll\n";
+        this->next->on_mouse_scroll(delta);
+    }
+}

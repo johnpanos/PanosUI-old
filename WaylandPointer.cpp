@@ -79,7 +79,11 @@ static void wl_pointer_button(void *data, struct wl_pointer *wl_pointer,
 static void wl_pointer_axis(void *data, struct wl_pointer *wl_pointer,
                             uint32_t time, uint32_t axis, wl_fixed_t value)
 {
-    // Who cares
+    WaylandPointer *pointer = static_cast<WaylandPointer *>(data);
+    if (axis == 0)
+    {
+        pointer->delegate->on_mouse_scroll(value < 0);
+    }
 }
 
 static void wl_pointer_frame(void *data, struct wl_pointer *wl_pointer)
