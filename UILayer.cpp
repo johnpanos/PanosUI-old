@@ -12,6 +12,7 @@ Layer::Layer()
 
     this->background_radius.value = 0;
     this->opacity.value = 255;
+    this->bounds_y.value = 0;
 }
 
 void Layer::set_frame(SkRect frame)

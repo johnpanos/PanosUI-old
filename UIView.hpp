@@ -34,6 +34,7 @@ namespace UI
 
         bool loaded;
         bool needs_repaint;
+        bool clip_to_bounds;
 
         void set_frame(SkRect rect);
         void set_bounds(SkRect rect);
@@ -49,6 +50,13 @@ namespace UI
 
         SkPoint convert(SkPoint point, View *to);
 
+        void set_background_radius(int radius);
+        void set_opacity(int opacity);
+
+        void layout_if_needed();
+        void set_needs_layout();
+
+        virtual void layout_subviews();
         virtual void view_did_load();
         virtual void draw(Layer *layer);
     };

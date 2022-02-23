@@ -1,6 +1,8 @@
 #ifndef _EVENTRESPONDER_H
 #define _EVENTRESPONDER_H
 
+#include <include/core/SkPoint.h>
+
 namespace UI
 {
     class EventResponder
@@ -15,6 +17,8 @@ namespace UI
 
         virtual void on_mouse_enter();
         virtual void on_mouse_exit();
+
+        virtual void on_mouse_drag(SkPoint delta);
 
         virtual ~EventResponder(){};
     };

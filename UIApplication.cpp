@@ -44,6 +44,11 @@ void Application::render(View *view, SkPoint origin)
     SkPoint new_origin = origin;
     new_origin.offset(view->layer->x.get(), view->layer->y.get());
 
+    if (view->parent != nullptr)
+    {
+        new_origin.offset(view->parent->bounds.x(), view->parent->layer->bounds_y.get());
+    }
+
     SkRect layer_frame = SkRect::MakeXYWH(view->layer->x.get(), view->layer->y.get(), view->layer->width.get(), view->layer->height.get());
 
     if (layer_frame != view->frame || view->opacity != view->layer->opacity.get() || view->background_radius != view->layer->background_radius.get() || view->layer->needs_repaint)
@@ -53,25 +58,72 @@ void Application::render(View *view, SkPoint origin)
         view->layer->needs_repaint = false;
     }
 
-    view->layer->backing_surface->draw(this->window->surface->getCanvas(), new_origin.x(), new_origin.y());
-
-    for (UI::View *view : view->children)
+    SkCanvas *canvas = this->window->surface->getCanvas();
+    if (view->clip_to_bounds)
     {
-        this->render(view, new_origin);
+        std::cout << "clip to bounds\n";
+        SkRect clip_rect = view->frame;
+        SkPaint paint;
+        paint.setColor(SK_ColorBLACK);
+        canvas->drawRect(clip_rect, paint);
+
+        canvas->save();
+        canvas->clipRect(clip_rect, SkClipOp::kIntersect, true);
+        view->layer->backing_surface->draw(this->window->surface->getCanvas(), new_origin.x(), new_origin.y());
+        for (UI::View *view : view->children)
+        {
+            this->render(view, new_origin);
+        }
+        canvas->restore();
+    }
+    else
+    {
+        view->layer->backing_surface->draw(this->window->surface->getCanvas(), new_origin.x(), new_origin.y());
+        for (UI::View *view : view->children)
+        {
+            this->render(view, new_origin);
+        }
     }
 }
 
 void Application::run(Window *window)
 {
+    std::cout << "run\n";
     this->window = window;
+
     UI::Animation::Transaction::begin();
+    wl_display_dispatch(this->display);
     window->delegate->did_finish_launching(window);
+    window->root_view->view_did_load();
+    window->root_view->layout_if_needed();
+    window->needsRepaint = true;
+    window->draw();
     UI::Animation::Transaction::flush();
+
     while (true)
     {
+        UI::Animation::Transaction::begin();
         wl_display_dispatch(this->display);
 
-        UI::Animation::Transaction::begin();
+        if (this->window->toplevel->resized)
+        {
+            this->window->toplevel->resized = false;
+            this->window->on_resize(this->window->toplevel->width, this->window->toplevel->height);
+            if (this->window->root_view != nullptr)
+            {
+                this->window->root_view->set_frame(SkRect::MakeXYWH(0, 0, this->window->toplevel->width, this->window->toplevel->height));
+                this->window->root_view->set_needs_layout();
+            }
+        }
+
+        if (window->needs_layout)
+        {
+            window->root_view->layout_if_needed();
+            window->needs_layout = false;
+        }
+
+        UI::Animation::Transaction::flush();
+
         if (UI::Animation::AnimationCore::animations.size() > 0)
         {
             window->needsRepaint = true;
@@ -81,8 +133,6 @@ void Application::run(Window *window)
 
             window->draw();
         }
-
-        UI::Animation::Transaction::flush();
 
         sleep(.16);
     }

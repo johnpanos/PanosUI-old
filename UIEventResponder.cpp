@@ -50,3 +50,12 @@ void EventResponder::on_mouse_exit()
         this->next->on_mouse_exit();
     }
 }
+
+void EventResponder::on_mouse_drag(SkPoint delta)
+{
+    if (this->next != nullptr)
+    {
+        std::cout << "Passing mouse drag\n";
+        this->next->on_mouse_drag(delta);
+    }
+}

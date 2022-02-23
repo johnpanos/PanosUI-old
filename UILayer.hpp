@@ -30,6 +30,8 @@ namespace UI
         Animation::AnimatableProperty background_radius;
         Animation::AnimatableProperty opacity;
 
+        Animation::AnimatableProperty bounds_y;
+
         bool needs_recreate;
         bool needs_repaint;
 

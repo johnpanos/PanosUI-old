@@ -1,6 +1,10 @@
 #include <iostream>
 #include <thread>
 #include <queue>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+#include <random>
 #include "UIApplication.hpp"
 #include "UIWindow.hpp"
 #include "UIView.hpp"
@@ -58,6 +62,8 @@ class Button : public UI::View
     using UI::View::View;
 
 public:
+    std::function<void()> on_click_up;
+
     Label *label;
     std::string text;
     int padding_horizontal = 0;
@@ -66,13 +72,15 @@ public:
     virtual void view_did_load()
     {
         UI::View::view_did_load();
+
         label = new Label(SkRect::MakeEmpty());
         label->set_value(this->text);
         label->font = SkFont(nullptr, 18);
+        label->color = SkColorSetRGB(10, 132, 255);
 
         this->add_subview(label);
-
         label->size_to_fit();
+
         this->set_frame(SkRect::MakeXYWH(this->frame.x(), this->frame.y(), label->frame.width() + padding_horizontal * 2, label->frame.height() + padding_vertical * 2));
         label->set_frame(label->frame.makeOffset(padding_horizontal, padding_vertical));
     }
@@ -80,13 +88,17 @@ public:
     virtual void on_mouse_click()
     {
         UI::View::animate(50, [this]()
-                          { this->label->opacity = 150; this->label->layer->opacity.set(150); });
+                          { this->label->set_opacity(150); });
     }
 
     virtual void on_mouse_up(int x, int y)
     {
         UI::View::animate(100, [this]()
-                          { this->label->opacity = 255; this->label->layer->opacity.set(255); });
+                          { this->label->set_opacity(255); });
+        if (this->on_click_up != nullptr)
+        {
+            this->on_click_up();
+        }
     }
 };
 
@@ -108,7 +120,7 @@ class CircleView : public UI::View
         this->size = (int)((float)this->parent->frame.height() * .88f);
         this->center = (this->parent->frame.height() / 2) - size / 2;
 
-        this->layer->background_radius.set(this->parent->frame.height());
+        this->set_background_radius(this->parent->frame.height());
 
         this->value = false;
 
@@ -164,16 +176,14 @@ public:
 
         // gray
         this->background_color = SkColorSetARGB(255, 120, 120, 128);
-        this->opacity = 40;
-        this->layer->opacity.set(40);
+        this->set_opacity(40);
 
         green_view = new UI::View(SkRect::MakeXYWH(0, 0, WIDTH, HEIGHT));
         this->add_subview(green_view);
         // green
         green_view->layer->background_radius.set(31);
         green_view->background_color = SkColorSetARGB(255, 52, 199, 89);
-        green_view->opacity = 0;
-        green_view->layer->opacity.set(0);
+        green_view->set_opacity(0);
 
         circle_view = new CircleView(SkRect::MakeXYWH(0, 0, 0, 0));
 
@@ -188,13 +198,11 @@ public:
         {
             if (this->circle_view->value)
             {
-                this->opacity = 255;
-                this->green_view->layer->opacity.set(255);
+                this->green_view->set_opacity(255);
             }
             else
             {
-                this->opacity = 0;
-                this->green_view->layer->opacity.set(0);
+                this->green_view->set_opacity(0);
             }
         };
 
@@ -217,9 +225,9 @@ public:
     virtual void on_mouse_up(int x, int y)
     {
         // std::cout << "Click from UISwitch!\n";
+        UI::View::on_mouse_up(x, y);
         if (this->point_inside(SkPoint::Make(x, y)))
         {
-
             this->toggle();
         }
         // else
@@ -250,13 +258,13 @@ class HoverView : public UI::View
     virtual void on_mouse_enter()
     {
         UI::View::animate(250, [this]()
-                          { this->opacity = 255; this->layer->opacity.set(255); });
+                          { this->set_opacity(255); });
     }
 
     virtual void on_mouse_exit()
     {
         UI::View::animate(500, [this]()
-                          { this->opacity = 150; this->layer->opacity.set(150); });
+                          { this->set_opacity(150); });
     }
 };
 
@@ -276,23 +284,152 @@ class ShellView : public UI::View
         menu_button = new HoverView(SkRect::MakeXYWH(8, 4, 24, 24));
         this->add_subview(menu_button);
         menu_button->background_color = SkColorSetARGB(255, 150, 150, 150);
-        menu_button->background_radius = 8;
-        menu_button->layer->background_radius.set(8);
+        menu_button->set_background_radius(8);
 
         program_view = new HoverView(SkRect::MakeXYWH(this->menu_button->frame.width() + this->menu_button->frame.x() + 12, 4, 130, 24));
         this->add_subview(program_view);
         program_view->background_color = SkColorSetARGB(255, 150, 150, 150);
-        program_view->background_radius = 8;
-        program_view->layer->background_radius.set(8);
+        program_view->set_background_radius(8);
 
         time_label = new Label(SkRect::MakeEmpty());
         time_label->set_value("5:00 AM");
         time_label->font = SkFont(nullptr, 11);
+        time_label->font.setSubpixel(true);
+        time_label->color = SK_ColorWHITE;
         this->add_subview(time_label);
         time_label->size_to_fit();
-        time_label->color = SK_ColorWHITE;
+    }
 
-        this->time_label->set_frame(this->time_label->frame.makeOffset(this->frame.width() - this->time_label->frame.width() - 12, this->frame.height() / 2 - this->time_label->frame.height() / 2));
+    virtual void layout_subviews()
+    {
+        auto t = std::time(nullptr);
+        auto tm = *std::localtime(&t);
+        std::ostringstream oss;
+        oss << std::put_time(&tm, "%I:%M %p");
+        std::string str = oss.str();
+
+        if (str.front() == '0')
+        {
+            std::cout << "begins with 0\n";
+            str.erase(0, 1);
+        }
+
+        this->time_label->set_value(str);
+        this->time_label->size_to_fit();
+
+        int width = this->time_label->frame.width();
+        int height = this->time_label->frame.height();
+        int x = this->frame.width() - width - 12;
+        int y = this->frame.height() / 2 - height / 2;
+        this->time_label->set_frame(SkRect::MakeXYWH(x, y, width, height));
+    }
+};
+
+class ScrollView : public UI::View
+{
+    using UI::View::View;
+
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
+        this->clip_to_bounds = true;
+
+        std::random_device rd;                         // obtain a random number from hardware
+        std::mt19937 gen(rd());                        // seed the generator
+        std::uniform_int_distribution<> distr(0, 255); // define the range
+
+        for (int i = 0; i < 10; i++)
+        {
+            int r = distr(gen);
+            int b = distr(gen);
+            int g = distr(gen);
+            UI::View *new_view = new UI::View(SkRect::MakeEmpty());
+            new_view->background_color = SkColorSetRGB(r, g, b);
+
+            MyView *my_switch = new MyView(SkRect::MakeEmpty());
+            new_view->add_subview(my_switch);
+
+            this->add_subview(new_view);
+        }
+    }
+
+    int prev_y = 0;
+    const static int height = 64;
+
+    virtual void layout_subviews()
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            UI::View *view = children.at(i);
+            view->set_frame(SkRect::MakeXYWH(0, height * i, this->frame.width(), 64));
+        }
+    }
+
+    virtual void on_mouse_up(int x, int y)
+    {
+        int d = std::min(0, (int)(this->layer->bounds_y.get()));
+        d = std::max(-(int)(height * children.size()) + 250, d);
+
+        this->set_bounds(SkRect::MakeXYWH(0, d, this->bounds.width(), this->bounds.height()));
+
+        UI::View::animate(250, [this, &d]()
+                          { this->layer->bounds_y.set(d); });
+    }
+
+    virtual void on_mouse_drag(SkPoint delta)
+    {
+        std::cout << "drag delta: " << delta.x() << " " << delta.y() << "\n";
+        std::cout << "bounds_y: " << this->layer->bounds_y.get() << "\n";
+        this->layer->bounds_y.set(this->bounds.y() + delta.y());
+    }
+};
+
+class RootView : public UI::View
+{
+    using UI::View::View;
+
+    ShellView *shell_view;
+    MyView *switch_view;
+    Button *button_view;
+    ScrollView *scroll_view;
+
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
+        // shell_view = new ShellView(SkRect::MakeXYWH(0, 0, 50, 50));
+        // shell_view->background_color = SK_ColorBLACK;
+        // this->add_subview(shell_view);
+
+        scroll_view = new ScrollView(SkRect::MakeXYWH(0, 0, 250, 250));
+        scroll_view->background_color = SK_ColorBLACK;
+        this->add_subview(scroll_view);
+
+        // switch_view = new MyView(SkRect::MakeEmpty());
+        // this->add_subview(switch_view);
+
+        // button_view = new Button(SkRect::MakeEmpty());
+        // button_view->text = "The Fucking!!!!";
+        // this->add_subview(button_view);
+
+        // button_view->on_click_up = [this]()
+        // {
+        //     this->switch_view->toggle();c
+        // };
+    }
+
+    virtual void layout_subviews()
+    {
+        int width = this->frame.width();
+        int height = this->frame.height();
+
+        // shell_view->set_frame(SkRect::MakeXYWH(0, height - 32, width, 32));
+        scroll_view->set_frame(SkRect::MakeXYWH(width / 2 - scroll_view->frame.width() / 2, height / 2 - scroll_view->frame.height() / 2, scroll_view->frame.width(), scroll_view->frame.height()));
+
+        // SkRect switch_frame = this->switch_view->frame;
+        // switch_view->set_frame(SkRect::MakeXYWH(width / 2 - switch_view->frame.width() / 2, height / 2 - switch_view->frame.height() / 2, switch_frame.width(), switch_frame.height()));
+
+        // SkRect button_frame = this->button_view->frame;
+        // button_view->set_frame(SkRect::MakeXYWH(width / 2 - button_frame.width() / 2, height / 2 - button_frame.height() / 2 + switch_view->frame.height() + 4, button_frame.width(), button_frame.height()));
     }
 };
 
@@ -300,24 +437,9 @@ class MyWindowDelegate : public UI::WindowDelegate
 {
     virtual void did_finish_launching(UI::Window *window)
     {
-        UI::View *root_view = new UI::View(SkRect::MakeXYWH(0, 0, 1916, 506));
-        MyView *view = new MyView(SkRect::MakeXYWH(0, 0, 50, 50));
-        root_view->add_subview(view);
-
-        Button *button = new Button(SkRect::MakeXYWH(0, view->frame.height(), 0, 0));
-        button->text = "Click Me";
-        button->padding_horizontal = 16;
-        button->padding_vertical = 8;
-        root_view->add_subview(button);
-
-        button->label->color = SkColorSetRGB(10, 132, 255);
-
-        ShellView *shell_view = new ShellView(SkRect::MakeXYWH(0, root_view->frame.height() - 32, root_view->frame.width(), 32));
-        shell_view->background_color = SK_ColorBLACK;
-        root_view->add_subview(shell_view);
-
-        // button->background_color = SK_ColorLTGRAY;
-        // button->layer->background_radius.set(8);
+        RootView *root_view = new RootView(SkRect::MakeXYWH(0, 0, 500, 500));
+        root_view->parent = nullptr;
+        root_view->next = nullptr;
 
         window->root_view = root_view;
     }

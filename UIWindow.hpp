@@ -40,10 +40,14 @@ namespace UI
 
         bool needsRepaint;
 
+        bool needs_layout;
+
         View *root_view;
 
         View *hovered_view;
         View *clicked_view;
+        SkPoint global_clicked_at;
+        SkPoint local_clicked_at;
 
         Window(const char *title, SkRect frame);
         ~Window();

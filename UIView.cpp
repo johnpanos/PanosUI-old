@@ -1,4 +1,5 @@
 #include "UIView.hpp"
+#include "UIApplication.hpp"
 
 using namespace UI;
 
@@ -16,21 +17,24 @@ View::View(SkRect frame)
 {
     this->loaded = false;
     this->frame = frame;
-    this->bounds = frame;
+    this->bounds = SkRect::MakeXYWH(0, 0, frame.width(), frame.height());
 
     this->background_color = SK_ColorWHITE;
     this->opacity = 255;
     this->background_radius = 0;
 
     this->needs_repaint = true;
+    this->clip_to_bounds = false;
 }
 
 void View::set_frame(SkRect frame)
 {
     this->needs_repaint = true;
     this->frame = frame;
-    this->bounds = frame;
+    this->bounds = SkRect::MakeXYWH(this->bounds.x(), this->bounds.y(), frame.width(), frame.height());
     this->layer->set_frame(frame);
+
+    this->set_needs_layout();
 }
 
 void View::set_bounds(SkRect bounds)
@@ -86,17 +90,12 @@ View *View::hit_test(SkPoint point)
         UI::View *view = view_queue.front();
         view_queue.pop();
 
-        // std::cout << "Running hit test on " << view << "\n";
-
         SkPoint translated_point = this->convert(point, view);
 
         if (view->point_inside(translated_point))
         {
-            if (view->children.empty())
-            {
-                lowest_child = view;
-            }
-            else
+            lowest_child = view;
+            if (!view->children.empty())
             {
                 for (UI::View *view : view->children)
                 {
@@ -111,8 +110,6 @@ View *View::hit_test(SkPoint point)
 
 bool View::point_inside(SkPoint point)
 {
-    // std::cout << "Checking if point is inside: " << point.x() << " " << point.y() << "\n";
-    // std::cout << "Bounds: " << this->bounds.width() << " " << this->bounds.height() << "\n";
     return point.x() >= 0 && point.x() <= this->bounds.width() &&
            point.y() >= 0 && point.y() <= this->bounds.height();
 }
@@ -126,12 +123,54 @@ SkPoint View::convert(SkPoint point, View *to)
     {
         // std::cout << translated_point.x() << " - " << current_view->frame.x() << "\n";
         // std::cout << translated_point.y() << " - " << current_view->frame.y() << "\n\n";
-        translated_point.set(translated_point.x() - current_view->frame.x(),
-                             translated_point.y() - current_view->frame.y());
+        translated_point.set(translated_point.x() - current_view->frame.x() - current_view->parent->bounds.x(),
+                             translated_point.y() - current_view->frame.y() - current_view->parent->bounds.y());
         current_view = current_view->parent;
     }
 
     return translated_point;
+}
+
+void View::set_background_radius(int radius)
+{
+    this->background_radius = radius;
+    this->layer->background_radius.set(radius);
+}
+
+void View::set_opacity(int opacity)
+{
+    this->opacity = opacity;
+    this->layer->opacity.set(opacity);
+}
+
+void View::layout_subviews()
+{
+    // Implement
+}
+
+void View::layout_if_needed()
+{
+    this->layer->needs_repaint = true;
+    this->layout_subviews();
+    for (View *view : this->children)
+    {
+        view->layout_if_needed();
+    }
+}
+
+void View::set_needs_layout()
+{
+    UI::Application::getInstance()->window->needs_layout = true;
+}
+
+void View::view_did_load()
+{
+    // Create backing layer
+    this->layer = new Layer();
+    this->layer->set_frame(frame);
+    this->layer->delegate = this;
+
+    this->loaded = true;
 }
 
 void View::draw(Layer *layer)
@@ -147,14 +186,4 @@ void View::draw(Layer *layer)
         paint.setAlpha(layer->opacity.value);
         canvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(0, 0, layer->width.get(), layer->height.get()), layer->background_radius.get(), layer->background_radius.get()), paint);
     }
-}
-
-void View::view_did_load()
-{
-    // Create backing layer
-    this->layer = new Layer();
-    this->layer->set_frame(frame);
-    this->layer->delegate = this;
-
-    this->loaded = true;
 }
