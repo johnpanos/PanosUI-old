@@ -3,6 +3,7 @@
 
 #include <include/core/SkSurface.h>
 #include "UIAnimation.hpp"
+#include "UIShape.hpp"
 
 namespace UI
 {

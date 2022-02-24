@@ -68,6 +68,11 @@ namespace UI::Animation
             return 0.5 * (1 + sin(3.1415926 * (t - 0.5)));
         }
 
+        double easeOutCubic(double t)
+        {
+            return 1 + (--t) * t * t;
+        }
+
         double lerp(double a, double b, double t)
         {
             return a + (t * (b - a));
@@ -77,7 +82,7 @@ namespace UI::Animation
         {
             if (!finished)
             {
-                // std::cout << "start: " << this->start << " | now: " << this->property->value << " | " << this->end << "\n";
+                std::cout << "start: " << this->start << " | now: " << this->property->value << " | " << this->end << "\n";
                 if (now >= this->end_time)
                 {
                     this->property->value = end;
@@ -89,7 +94,7 @@ namespace UI::Animation
                 if (delta != 0)
                 {
                     double dt = (double)delta / (double)length;
-                    double prog = easeInOutSine(dt);
+                    double prog = easeOutCubic(dt);
                     this->property->value = (int)(lerp((double)this->start, (double)this->end, prog));
                 }
             }

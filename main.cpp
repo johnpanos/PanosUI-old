@@ -144,7 +144,7 @@ public:
             }
         };
 
-        UI::View::animate(150, animation_lambda);
+        UI::View::animate(250, animation_lambda);
     }
 
     void toggle()
@@ -325,6 +325,20 @@ class ShellView : public UI::View
     }
 };
 
+class InScrollView : public UI::View
+{
+    using UI::View::View;
+
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
+    }
+
+    virtual void layout_subviews()
+    {
+    }
+};
+
 class ScrollView : public UI::View
 {
     using UI::View::View;
@@ -332,7 +346,10 @@ class ScrollView : public UI::View
     virtual void view_did_load()
     {
         UI::View::view_did_load();
+
         this->clip_to_bounds = true;
+        this->drop_shadow = true;
+        this->background_radius = 32;
 
         std::random_device rd;                         // obtain a random number from hardware
         std::mt19937 gen(rd());                        // seed the generator
@@ -343,7 +360,7 @@ class ScrollView : public UI::View
             int r = distr(gen);
             int b = distr(gen);
             int g = distr(gen);
-            UI::View *new_view = new UI::View(SkRect::MakeEmpty());
+            HoverView *new_view = new HoverView(SkRect::MakeEmpty());
             new_view->background_color = SkColorSetRGB(r, g, b);
 
             MyView *my_switch = new MyView(SkRect::MakeEmpty());
@@ -361,6 +378,7 @@ class ScrollView : public UI::View
         for (int i = 0; i < 10; i++)
         {
             UI::View *view = children.at(i);
+            view->layer->opacity.set(150);
             view->set_frame(SkRect::MakeXYWH(0, height * i, this->frame.width(), 64));
         }
         scroll_end();
@@ -394,37 +412,62 @@ class ScrollView : public UI::View
     }
 };
 
-class RootView : public UI::View
+class SidebarView : public UI::View
 {
     using UI::View::View;
 
-    ShellView *shell_view;
+    UI::View *picture_view;
+    Label *name_label;
     MyView *switch_view;
-    Button *button_view;
-    ScrollView *scroll_view;
 
     virtual void view_did_load()
     {
         UI::View::view_did_load();
-        // shell_view = new ShellView(SkRect::MakeXYWH(0, 0, 50, 50));
-        // shell_view->background_color = SK_ColorBLACK;
-        // this->add_subview(shell_view);
 
-        scroll_view = new ScrollView(SkRect::MakeXYWH(0, 0, 250, 250));
-        scroll_view->background_color = SK_ColorBLACK;
-        this->add_subview(scroll_view);
+        this->picture_view = new UI::View(SkRect::MakeEmpty());
 
-        // switch_view = new MyView(SkRect::MakeEmpty());
-        // this->add_subview(switch_view);
+        this->name_label = new Label(SkRect::MakeEmpty());
+        this->name_label->color = SK_ColorWHITE;
+        this->name_label->font = SkFont(nullptr, 18);
+        this->name_label->set_value("John Panos");
 
-        // button_view = new Button(SkRect::MakeEmpty());
-        // button_view->text = "The Fucking!!!!";
-        // this->add_subview(button_view);
+        this->add_subview(picture_view);
+        this->add_subview(name_label);
 
-        // button_view->on_click_up = [this]()
-        // {
-        //     this->switch_view->toggle();c
-        // };
+        this->name_label->size_to_fit();
+
+        switch_view = new MyView(SkRect::MakeEmpty());
+        this->add_subview(switch_view);
+    }
+
+    virtual void layout_subviews()
+    {
+        this->picture_view->layer->background_radius.set(64);
+        this->picture_view->set_frame(SkRect::MakeXYWH(16, 16, 64, 64));
+
+        SkRect picture_frame = this->picture_view->frame;
+
+        SkRect name_frame = this->name_label->frame;
+        this->name_label->set_frame(SkRect::MakeXYWH(picture_frame.x() + picture_frame.width() + 8,
+                                                     picture_frame.height() / 2 + name_frame.height() / 2, name_frame.width(), name_frame.height()));
+    }
+};
+
+class RootView : public UI::View
+{
+    using UI::View::View;
+
+    SidebarView *sidebar;
+
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
+        this->background_color = SkColorSetRGB(33, 33, 33);
+
+        this->sidebar = new SidebarView(SkRect::MakeEmpty());
+        // this->sidebar->background_color = this->background_color;
+        this->sidebar->background_color = SK_ColorBLUE;
+        this->add_subview(sidebar);
     }
 
     virtual void layout_subviews()
@@ -432,14 +475,8 @@ class RootView : public UI::View
         int width = this->frame.width();
         int height = this->frame.height();
 
-        // shell_view->set_frame(SkRect::MakeXYWH(0, height - 32, width, 32));
-        scroll_view->set_frame(SkRect::MakeXYWH(width / 2 - scroll_view->frame.width() / 2, height / 2 - scroll_view->frame.height() / 2, scroll_view->frame.width(), scroll_view->frame.height()));
-
-        // SkRect switch_frame = this->switch_view->frame;
-        // switch_view->set_frame(SkRect::MakeXYWH(width / 2 - switch_view->frame.width() / 2, height / 2 - switch_view->frame.height() / 2, switch_frame.width(), switch_frame.height()));
-
-        // SkRect button_frame = this->button_view->frame;
-        // button_view->set_frame(SkRect::MakeXYWH(width / 2 - button_frame.width() / 2, height / 2 - button_frame.height() / 2 + switch_view->frame.height() + 4, button_frame.width(), button_frame.height()));
+        int sidebar_width = std::min(std::max((int)(width * .20f), 300), 400);
+        this->sidebar->set_frame(SkRect::MakeXYWH(0, 0, sidebar_width, height));
     }
 };
 
@@ -447,11 +484,9 @@ class MyWindowDelegate : public UI::WindowDelegate
 {
     virtual void did_finish_launching(UI::Window *window)
     {
-        RootView *root_view = new RootView(SkRect::MakeXYWH(0, 0, 500, 500));
-        root_view->parent = nullptr;
-        root_view->next = nullptr;
-
-        window->root_view = root_view;
+        window->root_view = new RootView(SkRect::MakeXYWH(0, 0, 500, 500));
+        window->root_view->parent = nullptr;
+        window->root_view->next = nullptr;
     }
 };
 

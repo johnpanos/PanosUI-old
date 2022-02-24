@@ -1,4 +1,4 @@
-project('PanosUI', ['cpp', 'c'])
+project('PanosUI', ['cpp', 'c'], default_options: ['cpp_std=c++17'])
 
 wayland_egl = dependency('wayland-egl')
 wayland_client = dependency('wayland-client')
@@ -13,6 +13,7 @@ glx = dependency('glx')
 src = [
     'main.cpp',
     'UIApplication.cpp',
+    'UIShape.cpp',
     'UIAnimation.cpp',
     'UIWindow.cpp',
     'UIEventResponder.cpp',

@@ -25,6 +25,7 @@ View::View(SkRect frame)
 
     this->needs_repaint = true;
     this->clip_to_bounds = false;
+    this->drop_shadow = false;
 }
 
 void View::set_frame(SkRect frame)

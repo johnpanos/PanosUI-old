@@ -35,6 +35,7 @@ namespace UI
         bool loaded;
         bool needs_repaint;
         bool clip_to_bounds;
+        bool drop_shadow;
 
         void set_frame(SkRect rect);
         void set_bounds(SkRect rect);

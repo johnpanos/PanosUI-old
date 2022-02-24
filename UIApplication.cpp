@@ -2,6 +2,7 @@
 #include "UIApplication.hpp"
 #include "UIAnimation.hpp"
 #include "UIView.hpp"
+#include <include/effects/SkBlurMaskFilter.h>
 #include <iostream>
 #include <unistd.h>
 
@@ -59,16 +60,21 @@ void Application::render(View *view, SkPoint origin)
     }
 
     SkCanvas *canvas = this->window->surface->getCanvas();
-    if (view->clip_to_bounds)
+
+    if (view->drop_shadow)
     {
-        std::cout << "clip to bounds\n";
-        SkRect clip_rect = view->frame;
         SkPaint paint;
         paint.setColor(SK_ColorBLACK);
-        canvas->drawRect(clip_rect, paint);
+        paint.setAntiAlias(true);
+        paint.setMaskFilter(SkMaskFilter::MakeBlur(kNormal_SkBlurStyle, 5.0f));
+        canvas->drawRRect(SkRRect::MakeRectXY(layer_frame, view->background_radius, view->background_radius), paint);
+    }
 
+    if (view->clip_to_bounds)
+    {
+        SkRRect clip_rect = SkRRect::MakeRectXY(layer_frame, view->background_radius, view->background_radius);
         canvas->save();
-        canvas->clipRect(clip_rect, SkClipOp::kIntersect, true);
+        canvas->clipRRect(clip_rect, SkClipOp::kIntersect, true);
         view->layer->backing_surface->draw(this->window->surface->getCanvas(), new_origin.x(), new_origin.y());
         for (UI::View *view : view->children)
         {
