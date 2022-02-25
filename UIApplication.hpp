@@ -23,11 +23,14 @@ namespace UI
         struct wl_display *display;
         Window *window;
 
+        bool frame_pending;
+
         static Application *getInstance();
 
         GrDirectContext *getSkiaContext();
 
         void render(View *view, SkPoint origin);
+        void render_window();
         void run(Window *window);
     };
 };

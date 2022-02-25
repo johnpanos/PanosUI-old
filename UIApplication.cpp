@@ -13,6 +13,7 @@ using namespace UI;
 Application::Application()
 {
     this->display = wl_display_connect(nullptr);
+    this->frame_pending = false;
 }
 
 GrDirectContext *Application::getSkiaContext()
@@ -98,6 +99,59 @@ void Application::render(View *view, SkPoint origin)
     }
 }
 
+static void frame_handle_done(void *data, struct wl_callback *callback,
+                              uint32_t time)
+{
+    std::cout << "frame\n";
+    UI::Application *app = static_cast<UI::Application *>(data);
+    wl_callback_destroy(callback);
+    app->frame_pending = false;
+    app->render_window();
+    wl_surface_damage_buffer(app->window->toplevel->wl_surface, 0, 0, INT32_MAX, INT32_MAX);
+}
+
+static const struct wl_callback_listener frame_listener = {
+    .done = frame_handle_done,
+};
+
+void Application::render_window()
+{
+    UI::Animation::Transaction::begin();
+    window->needsRepaint = true;
+
+    if (this->window->toplevel->resized)
+    {
+        this->window->toplevel->resized = false;
+        this->window->on_resize(this->window->toplevel->width, this->window->toplevel->height);
+        if (this->window->root_view != nullptr)
+        {
+            this->window->root_view->set_frame(SkRect::MakeXYWH(0, 0, this->window->toplevel->width, this->window->toplevel->height));
+            this->window->root_view->set_needs_layout();
+        }
+    }
+
+    if (window->needs_layout)
+    {
+        window->root_view->layout_if_needed();
+        window->needs_layout = false;
+    }
+
+    UI::Animation::Transaction::commit();
+    UI::Animation::Transaction::flush();
+
+    UI::Animation::AnimationCore::tick();
+
+    if (UI::Animation::AnimationCore::animations.size() > 0)
+    {
+        window->needsRepaint = true;
+        window->surface->getCanvas()->clear(SK_ColorWHITE);
+
+        this->render(window->root_view, SkPoint::Make(window->root_view->frame.x(), window->root_view->frame.y()));
+
+        window->draw();
+    }
+}
+
 void Application::run(Window *window)
 {
     std::cout << "run\n";
@@ -112,43 +166,16 @@ void Application::run(Window *window)
     window->draw();
     UI::Animation::Transaction::flush();
 
+    this->render_window();
+
     while (true)
     {
-        UI::Animation::Transaction::begin();
         wl_display_dispatch(this->display);
-
-        wl_surface_frame(this->window->toplevel->wl_surface);
-
-        if (this->window->toplevel->resized)
+        if (!this->frame_pending)
         {
-            this->window->toplevel->resized = false;
-            this->window->on_resize(this->window->toplevel->width, this->window->toplevel->height);
-            if (this->window->root_view != nullptr)
-            {
-                this->window->root_view->set_frame(SkRect::MakeXYWH(0, 0, this->window->toplevel->width, this->window->toplevel->height));
-                this->window->root_view->set_needs_layout();
-            }
-        }
-
-        if (window->needs_layout)
-        {
-            window->root_view->layout_if_needed();
-            window->needs_layout = false;
-        }
-
-        UI::Animation::Transaction::commit();
-        UI::Animation::Transaction::flush();
-
-        UI::Animation::AnimationCore::tick();
-
-        if (UI::Animation::AnimationCore::animations.size() > 0)
-        {
-            window->needsRepaint = true;
-            window->surface->getCanvas()->clear(SK_ColorWHITE);
-
-            this->render(window->root_view, SkPoint::Make(window->root_view->frame.x(), window->root_view->frame.y()));
-
-            window->draw();
+            struct wl_callback *callback = wl_surface_frame(this->window->toplevel->wl_surface);
+            wl_callback_add_listener(callback, &frame_listener, this);
+            this->frame_pending = true;
         }
     }
 }

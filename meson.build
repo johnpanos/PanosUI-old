@@ -11,19 +11,18 @@ freetype = dependency('freetype2')
 glx = dependency('glx')
 
 src = [
-    'main.cpp',
-    'UIApplication.cpp',
-    'UIShape.cpp',
-    'UIAnimation.cpp',
-    'UIWindow.cpp',
-    'UIEventResponder.cpp',
-    'UILayer.cpp',
-    'UIView.cpp',
-    'WaylandRegistry.cpp',
-    'WaylandPointer.cpp',
-    'egl.cpp',
     'xdg-shell-protocol.c',
-    'wlr-layer-shell-unstable-v1.c'
+    'main.cpp',
+    'wayland/Display.cpp',
+    'wayland/Registry.cpp',
+    'wayland/Surface.cpp',
+    'wayland/XDGSurface.cpp',
+    'wayland/XDGToplevel.cpp',
+    'ui/Registry.cpp',
+    'ui/Application.cpp',
+    'ui/Window.cpp',
+    'ui/WindowToplevel.cpp',
+    'egl.cpp'
 ]
 
 skia = declare_dependency(link_args : ['-L/home/john/skia/out/linux/x64', '-lskia'],
