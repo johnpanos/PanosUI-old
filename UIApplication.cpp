@@ -5,6 +5,8 @@
 #include <include/effects/SkBlurMaskFilter.h>
 #include <iostream>
 #include <unistd.h>
+#include <chrono>
+#include <thread>
 
 using namespace UI;
 
@@ -43,16 +45,19 @@ void Application::render(View *view, SkPoint origin)
     }
 
     SkPoint new_origin = origin;
-    new_origin.offset(view->layer->x.get(), view->layer->y.get());
+    new_origin.offset(view->layer->frame.x(), view->layer->frame.y());
 
     if (view->parent != nullptr)
     {
-        new_origin.offset(view->parent->bounds.x(), view->parent->layer->bounds_y.get());
+        new_origin.offset(view->parent->layer->bounds.x(), view->parent->layer->bounds.y());
     }
 
-    SkRect layer_frame = SkRect::MakeXYWH(view->layer->x.get(), view->layer->y.get(), view->layer->width.get(), view->layer->height.get());
+    SkRect layer_frame = SkRect::MakeXYWH(view->layer->frame.x(), view->layer->frame.y(), view->layer->frame.width(), view->layer->frame.height());
 
-    if (layer_frame != view->frame || view->opacity != view->layer->opacity.get() || view->background_radius != view->layer->background_radius.get() || view->layer->needs_repaint)
+    if (!view->frame.equals(view->layer->frame) ||
+        view->opacity != view->layer->opacity.get() ||
+        view->background_radius != view->layer->background_radius.get() ||
+        view->layer->needs_repaint)
     {
         view->layer->needs_repaint = true;
         view->layer->draw();
@@ -133,6 +138,7 @@ void Application::run(Window *window)
 
         if (UI::Animation::AnimationCore::animations.size() > 0)
         {
+            UI::Animation::AnimationCore::tick();
             window->needsRepaint = true;
             window->surface->getCanvas()->clear(SK_ColorWHITE);
 
@@ -140,8 +146,6 @@ void Application::run(Window *window)
 
             window->draw();
         }
-
-        sleep(.16);
     }
 }
 

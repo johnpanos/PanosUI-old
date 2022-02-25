@@ -20,18 +20,11 @@ namespace UI
     {
     public:
         SkSurface *backing_surface;
-        SkRect frame;
-        SkRect bounds;
-
-        Animation::AnimatableProperty x;
-        Animation::AnimatableProperty y;
-        Animation::AnimatableProperty width;
-        Animation::AnimatableProperty height;
+        Shape::AnimatableRect frame;
+        Shape::AnimatableRect bounds;
 
         Animation::AnimatableProperty background_radius;
         Animation::AnimatableProperty opacity;
-
-        Animation::AnimatableProperty bounds_y;
 
         bool needs_recreate;
         bool needs_repaint;
@@ -43,7 +36,8 @@ namespace UI
 
         void destroy();
 
-        void set_frame(SkRect frame);
+        void set_frame(Shape::Rect frame);
+        void set_bounds(Shape::Rect bounds);
 
         void draw();
         void ensure_layer();

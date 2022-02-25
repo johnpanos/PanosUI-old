@@ -13,11 +13,12 @@ void View::animate(int64_t duration, std::function<void()> context)
     UI::Animation::Transaction::commit();
 }
 
-View::View(SkRect frame)
+View::View(int x, int y, int width, int height)
 {
+    UI::Shape::Rect rect(x, y, width, height);
     this->loaded = false;
-    this->frame = frame;
-    this->bounds = SkRect::MakeXYWH(0, 0, frame.width(), frame.height());
+    this->frame = rect;
+    this->bounds = Shape::Rect(SkRect::MakeXYWH(0, 0, frame.width(), frame.height()));
 
     this->background_color = SK_ColorWHITE;
     this->opacity = 255;
@@ -28,19 +29,36 @@ View::View(SkRect frame)
     this->drop_shadow = false;
 }
 
-void View::set_frame(SkRect frame)
+View::View(Shape::Rect frame)
 {
+    this->loaded = false;
+    this->frame = frame;
+    this->bounds = Shape::Rect(SkRect::MakeXYWH(0, 0, frame.width(), frame.height()));
+
+    this->background_color = SK_ColorWHITE;
+    this->opacity = 255;
+    this->background_radius = 0;
+
+    this->needs_repaint = true;
+    this->clip_to_bounds = false;
+    this->drop_shadow = false;
+}
+
+void View::set_frame(Shape::Rect frame)
+{
+    std::cout << "Setting frame " << frame.x() << " " << frame.y() << " " << frame.width() << " " << frame.height() << "\n";
     this->needs_repaint = true;
     this->frame = frame;
-    this->bounds = SkRect::MakeXYWH(this->bounds.x(), this->bounds.y(), frame.width(), frame.height());
+    this->bounds = UI::Shape::Rect(this->bounds.x(), this->bounds.y(), frame.width(), frame.height());
     this->layer->set_frame(frame);
 
     this->set_needs_layout();
 }
 
-void View::set_bounds(SkRect bounds)
+void View::set_bounds(Shape::Rect bounds)
 {
     this->bounds = bounds;
+    this->layer->set_bounds(bounds);
 }
 
 void View::add_subview(View *view)
@@ -185,6 +203,6 @@ void View::draw(Layer *layer)
         paint.setAntiAlias(true);
         paint.setColor(this->background_color);
         paint.setAlpha(layer->opacity.value);
-        canvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(0, 0, layer->width.get(), layer->height.get()), layer->background_radius.get(), layer->background_radius.get()), paint);
+        canvas->drawRRect(SkRRect::MakeRectXY(SkRect::MakeXYWH(0, 0, layer->frame.width(), layer->frame.height()), layer->background_radius.get(), layer->background_radius.get()), paint);
     }
 }

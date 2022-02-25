@@ -12,18 +12,24 @@ Layer::Layer()
 
     this->background_radius.value = 0;
     this->opacity.value = 255;
-    this->bounds_y.value = 0;
+
+    this->frame = Shape::AnimatableRect(SkRect::MakeEmpty());
 }
 
-void Layer::set_frame(SkRect frame)
+void Layer::set_frame(Shape::Rect frame)
 {
+    std::cout << "Setting layer frame " << frame.x() << " " << frame.y() << " " << frame.width() << " " << frame.height() << "\n";
     this->needs_recreate = true;
     this->needs_repaint = true;
-    this->frame = frame;
-    this->x.set(frame.x());
-    this->y.set(frame.y());
-    this->width.set(frame.width());
-    this->height.set(frame.height());
+    this->frame.set(frame);
+}
+
+void Layer::set_bounds(Shape::Rect bounds)
+{
+    std::cout << "Setting bounds " << frame.x() << " " << frame.y() << " " << frame.width() << " " << frame.height() << "\n";
+    this->needs_recreate = true;
+    this->needs_repaint = true;
+    this->bounds.set(bounds);
 }
 
 void Layer::draw()
@@ -31,19 +37,27 @@ void Layer::draw()
     if (delegate != nullptr && this->needs_repaint)
     {
         this->ensure_layer();
-        this->delegate->draw(this);
+        if (this->frame.height() > 1 && this->frame.width() > 1)
+        {
+            this->delegate->draw(this);
+        }
     }
 }
 
 void Layer::ensure_layer()
 {
-    if (this->needs_recreate)
+    if (this->backing_surface == nullptr ||
+        this->needs_recreate ||
+        this->backing_surface->width() != this->frame.width() ||
+        this->backing_surface->height() != this->frame.height())
     {
         this->destroy();
 
         UI::Application *app = Application::getInstance();
         const SkImageInfo info = SkImageInfo::MakeN32(frame.width(), frame.height(), kPremul_SkAlphaType);
         this->backing_surface = SkSurface::MakeRenderTarget(app->getSkiaContext(), SkBudgeted::kYes, info).release();
+
+        std::cout << "Create frame " << frame.x() << " " << frame.y() << " " << frame.width() << " " << frame.height() << "\n";
 
         this->needs_recreate = false;
     }

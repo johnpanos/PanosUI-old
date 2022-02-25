@@ -58,13 +58,12 @@ void Transaction::flush()
     // // std::cout << "Flushing transactions\n";
     while (!transactions.empty())
     {
+
         Transaction *transaction = transactions.top();
         transaction->commit();
         transactions.pop();
 
         delete transaction;
-
-        UI::Animation::AnimationCore::tick();
     }
 }
 
@@ -76,7 +75,7 @@ void Transaction::set_duration(int64_t duration)
 
 void Transaction::add_animation_for_property(AnimatableProperty *property, int start, int end)
 {
-    std::cout << "Starting new animation\n";
+    // std::cout << "Starting new animation\n";
     Transaction *transaction = transactions.top();
     Animation *animation = new Animation();
     animation->property = property;

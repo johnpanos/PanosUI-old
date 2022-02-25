@@ -82,7 +82,7 @@ namespace UI::Animation
         {
             if (!finished)
             {
-                std::cout << "start: " << this->start << " | now: " << this->property->value << " | " << this->end << "\n";
+                // std::cout << "start: " << this->start << " | now: " << this->property->value << " | " << this->end << "\n";
                 if (now >= this->end_time)
                 {
                     this->property->value = end;
