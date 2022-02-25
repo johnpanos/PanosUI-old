@@ -186,7 +186,9 @@ void View::view_did_load()
     // Create backing layer
     this->layer = new Layer();
     this->layer->set_frame(frame);
+    this->layer->set_bounds(bounds);
     this->layer->delegate = this;
+    this->layer->ensure_layer();
 
     this->loaded = true;
 }

@@ -42,9 +42,11 @@ void Layer::draw()
 
 void Layer::ensure_layer()
 {
+    std::cout << (this->backing_surface == nullptr) << "\n";
     if (this->backing_surface == nullptr ||
         this->backing_surface->width() != this->frame.width() ||
-        this->backing_surface->height() != this->frame.height())
+        this->backing_surface->height() != this->frame.height() ||
+        this->needs_recreate)
     {
         this->destroy();
 

@@ -136,10 +136,10 @@ void Application::run(Window *window)
 
         UI::Animation::Transaction::commit();
         UI::Animation::Transaction::flush();
+        UI::Animation::AnimationCore::tick();
 
         if (UI::Animation::AnimationCore::animations.size() > 0)
         {
-            UI::Animation::AnimationCore::tick();
             window->needsRepaint = true;
             window->surface->getCanvas()->clear(SK_ColorWHITE);
 

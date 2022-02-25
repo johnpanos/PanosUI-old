@@ -185,7 +185,7 @@ public:
         green_view->background_color = SkColorSetARGB(255, 52, 199, 89);
         green_view->set_opacity(0);
 
-        circle_view = new CircleView(SkRect::MakeXYWH(0, 0, 0, 0));
+        circle_view = new CircleView(SkRect::MakeXYWH(0, 0, 10, 10));
 
         this->add_subview(circle_view);
     }
@@ -255,6 +255,30 @@ class HoverView : public UI::View
         this->layer->opacity.set(150);
     }
 
+    int x_before = 0;
+
+    virtual void on_mouse_click()
+    {
+        this->x_before = this->frame.x();
+    }
+
+    virtual void on_mouse_up(int x, int y)
+    {
+
+        UI::View::animate(250, [this]()
+                          {
+        UI::Shape::Rect rect = this->frame;
+        rect.set_x(this->x_before);
+        this->set_frame(rect); });
+    }
+
+    virtual void on_mouse_drag(SkPoint delta)
+    {
+        UI::Shape::Rect rect = this->frame;
+        rect.set_x(x_before + delta.x());
+        this->set_frame(rect);
+    }
+
     virtual void on_mouse_enter()
     {
         UI::View::animate(250, [this]()
@@ -268,62 +292,62 @@ class HoverView : public UI::View
     }
 };
 
-// class ShellView : public UI::View
-// {
-//     using UI::View::View;
+class ShellView : public UI::View
+{
+    using UI::View::View;
 
-//     Label *time_label;
-//     HoverView *menu_button;
-//     HoverView *program_view;
+    Label *time_label;
+    HoverView *menu_button;
+    HoverView *program_view;
 
-//     virtual void view_did_load()
-//     {
-//         UI::View::view_did_load();
-//         this->background_color = SkColorSetARGB(230, 47, 53, 69);
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
+        this->background_color = SkColorSetARGB(230, 47, 53, 69);
 
-//         menu_button = new HoverView(SkRect::MakeXYWH(8, 4, 24, 24));
-//         this->add_subview(menu_button);
-//         menu_button->background_color = SkColorSetARGB(255, 150, 150, 150);
-//         menu_button->set_background_radius(8);
+        menu_button = new HoverView(UI::Shape::Rect(8, 4, 24, 24));
+        this->add_subview(menu_button);
+        menu_button->background_color = SkColorSetARGB(255, 150, 150, 150);
+        menu_button->set_background_radius(8);
 
-//         program_view = new HoverView(SkRect::MakeXYWH(this->menu_button->frame.width() + this->menu_button->frame.x() + 12, 4, 130, 24));
-//         this->add_subview(program_view);
-//         program_view->background_color = SkColorSetARGB(255, 150, 150, 150);
-//         program_view->set_background_radius(8);
+        program_view = new HoverView(UI::Shape::Rect(this->menu_button->frame.width() + this->menu_button->frame.x() + 12, 4, 130, 24));
+        this->add_subview(program_view);
+        program_view->background_color = SkColorSetARGB(255, 150, 150, 150);
+        program_view->set_background_radius(8);
 
-//         time_label = new Label(SkRect::MakeEmpty());
-//         time_label->set_value("5:00 AM");
-//         time_label->font = SkFont(nullptr, 11);
-//         time_label->font.setSubpixel(true);
-//         time_label->color = SK_ColorWHITE;
-//         this->add_subview(time_label);
-//         time_label->size_to_fit();
-//     }
+        // time_label = new Label(UI::Shape::Rect(0, 0, 10, 10));
+        // time_label->set_value("5:00 AM");
+        // time_label->font = SkFont(SkTypeface::MakeFromName("FreeMono", SkFontStyle::Normal()), 1);
+        // time_label->font.setSubpixel(true);
+        // time_label->color = SK_ColorWHITE;
+        // this->add_subview(time_label);
+    }
 
-//     virtual void layout_subviews()
-//     {
-//         auto t = std::time(nullptr);
-//         auto tm = *std::localtime(&t);
-//         std::ostringstream oss;
-//         oss << std::put_time(&tm, "%I:%M %p");
-//         std::string str = oss.str();
+    virtual void layout_subviews()
+    {
+        std::cout << this->frame.width() << "\n";
+        // auto t = std::time(nullptr);
+        // auto tm = *std::localtime(&t);
+        // std::ostringstream oss;
+        // oss << std::put_time(&tm, "%I:%M %p");
+        // std::string str = oss.str();
 
-//         if (str.front() == '0')
-//         {
-//             std::cout << "begins with 0\n";
-//             str.erase(0, 1);
-//         }
+        // if (str.front() == '0')
+        // {
+        //     std::cout << "begins with 0\n";
+        //     str.erase(0, 1);
+        // }
 
-//         this->time_label->set_value(str);
-//         this->time_label->size_to_fit();
+        // this->time_label->set_value(str);
+        // this->time_label->size_to_fit();
 
-//         int width = this->time_label->frame.width();
-//         int height = this->time_label->frame.height();
-//         int x = this->frame.width() - width - 12;
-//         int y = this->frame.height() / 2 - height / 2;
-//         this->time_label->set_frame(SkRect::MakeXYWH(x, y, width, height));
-//     }
-// };
+        // int width = this->time_label->frame.width();
+        // int height = this->time_label->frame.height();
+        // int x = this->frame.width() - width - 12;
+        // int y = this->frame.height() / 2 - height / 2;
+        // this->time_label->set_frame(UI::Shape::Rect(x, y, width, height));
+    }
+};
 
 class ScrollView : public UI::View
 {
@@ -439,6 +463,7 @@ class RootView : public UI::View
 
     UI::View *test_view;
     MyView *switch_view;
+    ShellView *shell_view;
 
     Label *label;
 
@@ -446,9 +471,6 @@ class RootView : public UI::View
     {
         UI::View::view_did_load();
         this->background_color = SkColorSetRGB(33, 33, 33);
-
-        this->test_view = new ScrollView(0, 0, 50, 50);
-        this->add_subview(test_view);
 
         this->label = new Label(0, 0, 10, 10);
         this->label->set_value("Hello World");
@@ -458,18 +480,19 @@ class RootView : public UI::View
 
         this->switch_view = new MyView(0, 0, 10, 10);
         this->add_subview(switch_view);
+
+        this->shell_view = new ShellView(0, 0, 10, 10);
+        this->add_subview(shell_view);
     }
 
     virtual void layout_subviews()
     {
+        int width = this->frame.width();
+        int height = this->frame.height();
+        std::cout << width << "\n";
+
         this->label->size_to_fit();
-        auto l = [this]()
-        {
-            int width = this->frame.width();
-            int height = this->frame.height();
-            this->test_view->set_frame(UI::Shape::Rect(width / 4, height / 4, width / 2, height / 2));
-        };
-        UI::View::animate(1000, l);
+        this->shell_view->set_frame(UI::Shape::Rect(0, height - 32, width, 32));
     }
 };
 

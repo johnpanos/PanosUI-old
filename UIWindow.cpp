@@ -114,8 +114,7 @@ Window::Window(const char *title, SkRect frame)
 void Window::on_resize(int width, int height)
 {
     this->frame = SkRect::MakeXYWH(0, 0, width, height);
-
-    // std::cout << "width: " << this->frame.width() << " | height: " << this->frame.width() << "\n";
+    std::cout << "width: " << this->frame.width() << " | height: " << this->frame.height() << "\n";
 
     Application *app = Application::getInstance();
     wl_egl_window_resize(this->egl_window, toplevel->width, toplevel->height, 0, 0);
