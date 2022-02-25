@@ -32,16 +32,11 @@ void Window::on_mouse_motion(int x, int y)
 
 void Window::on_mouse_click()
 {
-    // std::cout << "Mouse click listener\n";
-    // std::cout << "X: " << this->x << "Y: " << this->y << "\n";
-    clicked_view = this->root_view->hit_test(SkPoint::Make(this->x, this->y));
-    global_clicked_at = SkPoint::Make(this->x, this->y);
-    local_clicked_at = this->root_view->convert(SkPoint::Make(this->x, this->y), clicked_view);
+    clicked_view = this->hovered_view;
     if (clicked_view != nullptr)
     {
-        // std::cout << "View found " << (clicked_view == this->root_view) << "\n";
-        std::cout << "clicked at " << global_clicked_at.x() << " " << global_clicked_at.y() << "\n";
-        std::cout << "clicked at " << local_clicked_at.x() << " " << local_clicked_at.y() << "\n";
+        global_clicked_at = SkPoint::Make(this->x, this->y);
+        local_clicked_at = this->root_view->convert(SkPoint::Make(this->x, this->y), clicked_view);
         clicked_view->on_mouse_click();
     }
     else

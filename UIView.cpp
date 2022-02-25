@@ -169,7 +169,6 @@ void View::layout_subviews()
 
 void View::layout_if_needed()
 {
-    this->layer->needs_repaint = true;
     this->layout_subviews();
     for (View *view : this->children)
     {

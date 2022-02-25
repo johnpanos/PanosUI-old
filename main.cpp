@@ -102,171 +102,171 @@ public:
 //     }
 // };
 
-// class CircleView : public UI::View
-// {
-//     using UI::View::View;
+class CircleView : public UI::View
+{
+    using UI::View::View;
 
-//     int PADDING = 2;
+    int PADDING = 2;
 
-//     int size;
-//     int center;
+    int size;
+    int center;
 
-//     virtual void view_did_load()
-//     {
-//         UI::View::view_did_load();
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
 
-//         this->PADDING = (int)((float)this->parent->frame.height() * (4.0f / 51.0f));
+        this->PADDING = (int)((float)this->parent->frame.height() * (4.0f / 51.0f));
 
-//         this->size = (int)((float)this->parent->frame.height() * .88f);
-//         this->center = (this->parent->frame.height() / 2) - size / 2;
+        this->size = (int)((float)this->parent->frame.height() * .88f);
+        this->center = (this->parent->frame.height() / 2) - size / 2;
 
-//         this->set_background_radius(this->parent->frame.height());
+        this->set_background_radius(this->parent->frame.height());
 
-//         this->value = false;
+        this->value = false;
 
-//         this->set_frame(SkRect::MakeXYWH(PADDING, center, size, size));
-//     }
+        this->set_frame(SkRect::MakeXYWH(PADDING, center, size, size));
+    }
 
-// public:
-//     bool value;
+public:
+    bool value;
 
-//     void queue_animation()
-//     {
-//         auto animation_lambda = [this]()
-//         {
-//             if (this->value)
-//             {
-//                 this->set_frame(SkRect::MakeXYWH(this->parent->frame.width() - size - PADDING, center, size, size));
-//             }
-//             else
-//             {
-//                 this->set_frame(SkRect::MakeXYWH(PADDING, center, size, size));
-//             }
-//         };
+    void queue_animation()
+    {
+        auto animation_lambda = [this]()
+        {
+            if (this->value)
+            {
+                this->set_frame(SkRect::MakeXYWH(this->parent->frame.width() - size - PADDING, center, size, size));
+            }
+            else
+            {
+                this->set_frame(SkRect::MakeXYWH(PADDING, center, size, size));
+            }
+        };
 
-//         UI::View::animate(250, animation_lambda);
-//     }
+        UI::View::animate(250, animation_lambda);
+    }
 
-//     void toggle()
-//     {
-//         this->value = !this->value;
-//         this->queue_animation();
-//     }
-// };
+    void toggle()
+    {
+        this->value = !this->value;
+        this->queue_animation();
+    }
+};
 
-// class MyView : public UI::View
-// {
-// public:
-//     using UI::View::View;
+class MyView : public UI::View
+{
+public:
+    using UI::View::View;
 
-//     UI::View *green_view;
-//     CircleView *circle_view;
+    UI::View *green_view;
+    CircleView *circle_view;
 
-//     static const int WIDTH = 51;
-//     static const int HEIGHT = 31;
+    static const int WIDTH = 51;
+    static const int HEIGHT = 31;
 
-//     virtual void
-//     view_did_load()
-//     {
-//         UI::View::view_did_load();
+    virtual void
+    view_did_load()
+    {
+        UI::View::view_did_load();
 
-//         this->set_frame(SkRect::MakeXYWH(0, 0, WIDTH, HEIGHT));
+        this->set_frame(SkRect::MakeXYWH(0, 0, WIDTH, HEIGHT));
 
-//         this->layer->background_radius.set(31);
+        this->layer->background_radius.set(31);
 
-//         // gray
-//         this->background_color = SkColorSetARGB(255, 120, 120, 128);
-//         this->set_opacity(40);
+        // gray
+        this->background_color = SkColorSetARGB(255, 120, 120, 128);
+        this->set_opacity(40);
 
-//         green_view = new UI::View(SkRect::MakeXYWH(0, 0, WIDTH, HEIGHT));
-//         this->add_subview(green_view);
-//         // green
-//         green_view->layer->background_radius.set(31);
-//         green_view->background_color = SkColorSetARGB(255, 52, 199, 89);
-//         green_view->set_opacity(0);
+        green_view = new UI::View(SkRect::MakeXYWH(0, 0, WIDTH, HEIGHT));
+        this->add_subview(green_view);
+        // green
+        green_view->layer->background_radius.set(31);
+        green_view->background_color = SkColorSetARGB(255, 52, 199, 89);
+        green_view->set_opacity(0);
 
-//         circle_view = new CircleView(SkRect::MakeXYWH(0, 0, 0, 0));
+        circle_view = new CircleView(SkRect::MakeXYWH(0, 0, 0, 0));
 
-//         this->add_subview(circle_view);
-//     }
+        this->add_subview(circle_view);
+    }
 
-//     void toggle()
-//     {
-//         this->circle_view->toggle();
+    void toggle()
+    {
+        this->circle_view->toggle();
 
-//         auto animation_lambda = [this]()
-//         {
-//             if (this->circle_view->value)
-//             {
-//                 this->green_view->set_opacity(255);
-//             }
-//             else
-//             {
-//                 this->green_view->set_opacity(0);
-//             }
-//         };
+        auto animation_lambda = [this]()
+        {
+            if (this->circle_view->value)
+            {
+                this->green_view->set_opacity(255);
+            }
+            else
+            {
+                this->green_view->set_opacity(0);
+            }
+        };
 
-//         UI::View::animate(300, animation_lambda);
-//     }
+        UI::View::animate(300, animation_lambda);
+    }
 
-//     virtual void on_mouse_click()
-//     {
-//         // std::cout << "new mouse down\n";
-//         // auto animation_lambda = [this]()
-//         // {
-//         //     SkRect new_frame = this->circle_view->frame;
-//         //     new_frame.setXYWH(new_frame.x(), new_frame.y(), new_frame.width() * 1.1, new_frame.height());
-//         //     this->circle_view->set_frame(new_frame);
-//         // };
+    virtual void on_mouse_click()
+    {
+        // std::cout << "new mouse down\n";
+        // auto animation_lambda = [this]()
+        // {
+        //     SkRect new_frame = this->circle_view->frame;
+        //     new_frame.setXYWH(new_frame.x(), new_frame.y(), new_frame.width() * 1.1, new_frame.height());
+        //     this->circle_view->set_frame(new_frame);
+        // };
 
-//         // UI::View::animate(150, animation_lambda);
-//     }
+        // UI::View::animate(150, animation_lambda);
+    }
 
-//     virtual void on_mouse_up(int x, int y)
-//     {
-//         // std::cout << "Click from UISwitch!\n";
-//         UI::View::on_mouse_up(x, y);
-//         if (this->point_inside(SkPoint::Make(x, y)))
-//         {
-//             this->toggle();
-//         }
-//         // else
-//         // {
-//         //     auto animation_lambda = [this]()
-//         //     {
-//         //         SkRect new_frame = this->circle_view->frame;
-//         //         new_frame.setXYWH(new_frame.x(), new_frame.y(), new_frame.height(), new_frame.height());
-//         //         this->circle_view->set_frame(new_frame);
-//         //     };
+    virtual void on_mouse_up(int x, int y)
+    {
+        // std::cout << "Click from UISwitch!\n";
+        UI::View::on_mouse_up(x, y);
+        if (this->point_inside(SkPoint::Make(x, y)))
+        {
+            this->toggle();
+        }
+        // else
+        // {
+        //     auto animation_lambda = [this]()
+        //     {
+        //         SkRect new_frame = this->circle_view->frame;
+        //         new_frame.setXYWH(new_frame.x(), new_frame.y(), new_frame.height(), new_frame.height());
+        //         this->circle_view->set_frame(new_frame);
+        //     };
 
-//         //     UI::View::animate(150, animation_lambda);
-//         // }
-//     }
-// };
+        //     UI::View::animate(150, animation_lambda);
+        // }
+    }
+};
 
-// class HoverView : public UI::View
-// {
-//     using UI::View::View;
+class HoverView : public UI::View
+{
+    using UI::View::View;
 
-//     virtual void view_did_load()
-//     {
-//         UI::View::view_did_load();
-//         this->opacity = 150;
-//         this->layer->opacity.set(150);
-//     }
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
+        this->opacity = 150;
+        this->layer->opacity.set(150);
+    }
 
-//     virtual void on_mouse_enter()
-//     {
-//         UI::View::animate(250, [this]()
-//                           { this->set_opacity(255); });
-//     }
+    virtual void on_mouse_enter()
+    {
+        UI::View::animate(250, [this]()
+                          { this->set_opacity(255); });
+    }
 
-//     virtual void on_mouse_exit()
-//     {
-//         UI::View::animate(500, [this]()
-//                           { this->set_opacity(150); });
-//     }
-// };
+    virtual void on_mouse_exit()
+    {
+        UI::View::animate(500, [this]()
+                          { this->set_opacity(150); });
+    }
+};
 
 // class ShellView : public UI::View
 // {
@@ -322,20 +322,6 @@ public:
 //         int x = this->frame.width() - width - 12;
 //         int y = this->frame.height() / 2 - height / 2;
 //         this->time_label->set_frame(SkRect::MakeXYWH(x, y, width, height));
-//     }
-// };
-
-// class InScrollView : public UI::View
-// {
-//     using UI::View::View;
-
-//     virtual void view_did_load()
-//     {
-//         UI::View::view_did_load();
-//     }
-
-//     virtual void layout_subviews()
-//     {
 //     }
 // };
 
@@ -452,6 +438,7 @@ class RootView : public UI::View
     using UI::View::View;
 
     UI::View *test_view;
+    MyView *switch_view;
 
     Label *label;
 
@@ -468,6 +455,9 @@ class RootView : public UI::View
         this->label->color = SK_ColorWHITE;
         this->label->font = SkFont(SkTypeface::MakeFromName("FreeMono", SkFontStyle::Normal()), 18);
         this->add_subview(label);
+
+        this->switch_view = new MyView(0, 0, 10, 10);
+        this->add_subview(switch_view);
     }
 
     virtual void layout_subviews()
@@ -477,7 +467,7 @@ class RootView : public UI::View
         {
             int width = this->frame.width();
             int height = this->frame.height();
-            this->test_view->set_frame(UI::Shape::Rect(width / 4, height / 4, 250, 250));
+            this->test_view->set_frame(UI::Shape::Rect(width / 4, height / 4, width / 2, height / 2));
         };
         UI::View::animate(1000, l);
     }
@@ -496,11 +486,8 @@ class MyWindowDelegate : public UI::WindowDelegate
 int main()
 {
     UI::Application *app = UI::Application::getInstance();
-    UI::Window *window = new UI::Window("Hello World", SkRect::MakeXYWH(0, 0, 500, 500));
+    UI::Window *window = new UI::Window("PanosUI", SkRect::MakeXYWH(0, 0, 500, 500));
     window->delegate = new MyWindowDelegate();
 
     app->run(window);
-
-    UI::Shape::Rect rect(SkRect::MakeEmpty());
-    std::cout << rect.x() << "\n";
 }

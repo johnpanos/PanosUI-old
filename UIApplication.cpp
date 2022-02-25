@@ -54,7 +54,8 @@ void Application::render(View *view, SkPoint origin)
 
     SkRect layer_frame = SkRect::MakeXYWH(view->layer->frame.x(), view->layer->frame.y(), view->layer->frame.width(), view->layer->frame.height());
 
-    if (!view->frame.equals(view->layer->frame) ||
+    if (view->frame.width() != view->layer->frame.width() ||
+        view->frame.height() != view->layer->frame.height() ||
         view->opacity != view->layer->opacity.get() ||
         view->background_radius != view->layer->background_radius.get() ||
         view->layer->needs_repaint)

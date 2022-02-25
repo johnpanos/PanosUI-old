@@ -58,7 +58,6 @@ void Transaction::flush()
     // // std::cout << "Flushing transactions\n";
     while (!transactions.empty())
     {
-
         Transaction *transaction = transactions.top();
         transaction->commit();
         transactions.pop();
