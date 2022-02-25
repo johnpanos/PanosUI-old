@@ -117,6 +117,8 @@ void Application::run(Window *window)
         UI::Animation::Transaction::begin();
         wl_display_dispatch(this->display);
 
+        wl_surface_frame(this->window->toplevel->wl_surface);
+
         if (this->window->toplevel->resized)
         {
             this->window->toplevel->resized = false;
@@ -136,6 +138,7 @@ void Application::run(Window *window)
 
         UI::Animation::Transaction::commit();
         UI::Animation::Transaction::flush();
+
         UI::Animation::AnimationCore::tick();
 
         if (UI::Animation::AnimationCore::animations.size() > 0)
