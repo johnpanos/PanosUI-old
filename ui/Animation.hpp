@@ -1,5 +1,5 @@
-#ifndef _UIANIMATION_H
-#define _UIANIMATION_H
+#ifndef _UI_ANIMATION_H
+#define _UI_ANIMATION_H
 #include <stack>
 #include <vector>
 #include <iostream>

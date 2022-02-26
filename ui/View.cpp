@@ -1,5 +1,5 @@
-#include "UIView.hpp"
-#include "UIApplication.hpp"
+#include "View.hpp"
+#include "Application.hpp"
 
 using namespace UI;
 
@@ -66,6 +66,7 @@ void View::add_subview(View *view)
     this->children.push_back(view);
     view->next = this;
     view->parent = this;
+    view->window = this->window;
     view->view_did_load();
 }
 
@@ -178,7 +179,6 @@ void View::layout_if_needed()
 
 void View::set_needs_layout()
 {
-    UI::Application::getInstance()->window->needs_layout = true;
 }
 
 void View::view_did_load()
@@ -188,6 +188,7 @@ void View::view_did_load()
     this->layer->set_frame(frame);
     this->layer->set_bounds(bounds);
     this->layer->delegate = this;
+    this->layer->context = this->window->skia.get_context();
     this->layer->ensure_layer();
 
     this->loaded = true;

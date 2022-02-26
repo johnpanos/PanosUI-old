@@ -1,5 +1,5 @@
-#include "UILayer.hpp"
-#include "UIApplication.hpp"
+#include "Layer.hpp"
+#include "Application.hpp"
 #include <iostream>
 
 using namespace UI;
@@ -30,7 +30,7 @@ void Layer::draw()
 {
     if (delegate != nullptr)
     {
-        this->ensure_layer();
+        this->layer->ensure_layer();
         if (this->frame.height() > 1 && this->frame.width() > 1 && this->needs_repaint)
         {
             std::cout << "I am drawing\n";
@@ -50,9 +50,8 @@ void Layer::ensure_layer()
     {
         this->destroy();
 
-        UI::Application *app = Application::getInstance();
         const SkImageInfo info = SkImageInfo::MakeN32(frame.width(), frame.height(), kPremul_SkAlphaType);
-        this->backing_surface = SkSurface::MakeRenderTarget(app->getSkiaContext(), SkBudgeted::kYes, info).release();
+        this->backing_surface = SkSurface::MakeRenderTarget(context, SkBudgeted::kYes, info).release();
 
         this->needs_recreate = false;
         this->needs_repaint = true;

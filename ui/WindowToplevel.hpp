@@ -7,7 +7,6 @@
 #include <EGL/egl.h>
 #include "Application.hpp"
 #include "Window.hpp"
-#include "Skia.hpp"
 
 namespace UI
 {
@@ -17,8 +16,6 @@ namespace UI
         Wayland::XDGToplevel *toplevel;
         EGLSurface egl_surface;
         wl_egl_window *egl_window;
-
-        Skia skia;
 
         WindowToplevel(const char *title, int width, int height);
 

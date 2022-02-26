@@ -1,5 +1,5 @@
-#ifndef _EVENTRESPONDER_H
-#define _EVENTRESPONDER_H
+#ifndef _EVENT_RESPONDER_H
+#define _EVENT_RESPONDER_H
 
 #include <include/core/SkPoint.h>
 

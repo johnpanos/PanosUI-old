@@ -1,15 +1,24 @@
 #include "ui/Application.hpp"
+#include "ui/Window.hpp"
 #include "ui/WindowToplevel.hpp"
+
+class MyWindow : public UI::WindowDelegate
+{
+    virtual void did_finish_launching(UI::Window *window)
+    {
+        std::cout << "Finished launching\n";
+    }
+};
 
 int main()
 {
     UI::Application *app = UI::Application::get_instance();
     UI::WindowToplevel *window = new UI::WindowToplevel("PanosUI", 500, 500);
-    UI::WindowToplevel *window2 = new UI::WindowToplevel("Window2", 600, 500);
+
+    MyWindow *my_window = new MyWindow();
+    window->delegate = my_window;
 
     app->add_window(window);
-    app->add_window(window2);
-
     app->run();
 }
 

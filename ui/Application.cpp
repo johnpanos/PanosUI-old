@@ -35,6 +35,7 @@ Application::~Application()
 void Application::add_window(Window *window)
 {
     this->windows.push_back(window);
+    window->delegate->did_finish_launching(window);
 }
 
 void Application::remove_window(Window *window)

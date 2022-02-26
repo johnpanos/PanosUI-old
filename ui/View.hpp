@@ -3,25 +3,26 @@
 
 #include <vector>
 #include <functional>
+
 #include <include/core/SkPaint.h>
 #include <include/core/SkCanvas.h>
 #include <include/core/SkRect.h>
 #include <include/core/SkRRect.h>
-#include "UILayer.hpp"
-#include "UIEventResponder.hpp"
-#include "UIShape.hpp"
+
+#include "Layer.hpp"
+#include "EventResponder.hpp"
+#include "Shape.hpp"
 
 namespace UI
 {
     class View : public LayerDelegate, public EventResponder
     {
     public:
-        static void animate(int64_t duration, std::function<void()> context);
-
         View(int x, int y, int width, int height);
         View(Shape::Rect frame);
         virtual ~View(){};
 
+        Window *window;
         View *parent;
         std::vector<View *> children;
 
@@ -63,6 +64,8 @@ namespace UI
         virtual void layout_subviews();
         virtual void view_did_load();
         virtual void draw(Layer *layer);
+
+        static void animate(int64_t duration, std::function<void()> context);
     };
 };
 

@@ -1,4 +1,4 @@
-#include "UIEventResponder.hpp"
+#include "EventResponder.hpp"
 #include <iostream>
 
 using namespace UI;

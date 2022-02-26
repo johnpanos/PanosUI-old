@@ -1,7 +1,7 @@
-#ifndef _UISHAPE_H
-#define _UISHAPE_H
+#ifndef _UI_SHAPE_H
+#define _UI_SHAPE_H
 
-#include "UIAnimation.hpp"
+#include "Animation.hpp"
 #include <include/core/SkRect.h>
 
 namespace UI::Shape

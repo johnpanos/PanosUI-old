@@ -2,8 +2,8 @@
 #define _UILayer_H
 
 #include <include/core/SkSurface.h>
-#include "UIAnimation.hpp"
-#include "UIShape.hpp"
+#include "Animation.hpp"
+#include "Shape.hpp"
 
 namespace UI
 {
@@ -30,6 +30,7 @@ namespace UI
         bool needs_repaint;
 
         LayerDelegate *delegate;
+        GrDirectContext *context;
 
         Layer();
         ~Layer();
