@@ -4,7 +4,7 @@
 
 using namespace UI;
 
-Layer::Layer()
+Layer::Layer(int x, int y, int width, int height)
 {
     this->backing_surface = nullptr;
     this->needs_recreate = true;
@@ -13,7 +13,7 @@ Layer::Layer()
     this->opacity.value = 255;
     this->background_radius.value = 0;
 
-    this->frame = Shape::AnimatableRect(SkRect::MakeEmpty());
+    this->frame = Shape::AnimatableRect(x, y, width, height);
 }
 
 void Layer::set_frame(Shape::Rect frame)
@@ -30,7 +30,7 @@ void Layer::draw()
 {
     if (delegate != nullptr)
     {
-        this->layer->ensure_layer();
+        this->ensure_layer();
         if (this->frame.height() > 1 && this->frame.width() > 1 && this->needs_repaint)
         {
             std::cout << "I am drawing\n";
@@ -42,7 +42,10 @@ void Layer::draw()
 
 void Layer::ensure_layer()
 {
-    std::cout << (this->backing_surface == nullptr) << "\n";
+    std::cout << "Ensure layer\n";
+    std::cout << "" << frame.width() << " " << frame.height() << "\n";
+    assert(frame.width() != 0);
+    assert(frame.height() != 0);
     if (this->backing_surface == nullptr ||
         this->backing_surface->width() != this->frame.width() ||
         this->backing_surface->height() != this->frame.height() ||

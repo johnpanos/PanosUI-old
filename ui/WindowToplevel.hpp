@@ -25,6 +25,7 @@ namespace UI
         int height;
 
         virtual void draw();
+        virtual void render(View *view, SkPoint origin);
 
         virtual int get_width();
         virtual int get_height();

@@ -15,7 +15,10 @@ void View::animate(int64_t duration, std::function<void()> context)
 
 View::View(int x, int y, int width, int height)
 {
+    std::cout << "Creating view\n";
     UI::Shape::Rect rect(x, y, width, height);
+    this->children = std::vector<View *>();
+
     this->loaded = false;
     this->frame = rect;
     this->bounds = Shape::Rect(SkRect::MakeXYWH(0, 0, frame.width(), frame.height()));
@@ -183,10 +186,11 @@ void View::set_needs_layout()
 
 void View::view_did_load()
 {
+    assert(this->window != nullptr);
     // Create backing layer
-    this->layer = new Layer();
-    this->layer->set_frame(frame);
-    this->layer->set_bounds(bounds);
+    this->layer = new Layer(this->frame.x(), this->frame.y(), this->frame.width(), this->frame.height());
+    this->layer->needs_recreate = true;
+    this->layer->set_bounds(this->bounds);
     this->layer->delegate = this;
     this->layer->context = this->window->skia.get_context();
     this->layer->ensure_layer();
@@ -196,6 +200,7 @@ void View::view_did_load()
 
 void View::draw(Layer *layer)
 {
+    std::cout << "Drawing\n";
     SkCanvas *canvas = layer->backing_surface->getCanvas();
     canvas->clear(SK_ColorTRANSPARENT);
 

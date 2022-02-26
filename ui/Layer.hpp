@@ -32,7 +32,7 @@ namespace UI
         LayerDelegate *delegate;
         GrDirectContext *context;
 
-        Layer();
+        Layer(int x, int y, int width, int height);
         ~Layer();
 
         void destroy();

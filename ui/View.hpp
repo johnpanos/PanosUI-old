@@ -9,12 +9,15 @@
 #include <include/core/SkRect.h>
 #include <include/core/SkRRect.h>
 
+#include "Window.hpp"
 #include "Layer.hpp"
 #include "EventResponder.hpp"
 #include "Shape.hpp"
 
 namespace UI
 {
+    class Window;
+
     class View : public LayerDelegate, public EventResponder
     {
     public:
@@ -22,8 +25,10 @@ namespace UI
         View(Shape::Rect frame);
         virtual ~View(){};
 
-        Window *window;
-        View *parent;
+        Window *window = nullptr;
+        View *parent = nullptr;
+        Layer *layer = nullptr;
+
         std::vector<View *> children;
 
         SkColor background_color;
@@ -33,8 +38,6 @@ namespace UI
 
         int background_radius;
         int opacity;
-
-        Layer *layer;
 
         bool loaded;
         bool needs_repaint;

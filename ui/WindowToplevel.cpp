@@ -22,6 +22,7 @@ WindowToplevel::WindowToplevel(const char *title, int width, int height)
 {
     std::cout << "Created WindowToplevel " << width << " " << height << "\n";
     Application *app = Application::get_instance();
+
     this->toplevel = new Wayland::XDGToplevel(app->registry->xdg_wm_base, app->registry->wl_compositor);
     this->toplevel->listener = this;
     this->toplevel->set_title(title);
@@ -30,7 +31,6 @@ WindowToplevel::WindowToplevel(const char *title, int width, int height)
     app->display.round_trip();
 
     this->egl_window = wl_egl_window_create(toplevel->wl_surface, width, height);
-
     this->egl_surface = eglCreateWindowSurface(app->egl_provider.egl_display, app->egl_provider.egl_config, this->egl_window, nullptr);
 
     if (this->egl_surface == EGL_NO_SURFACE)
@@ -47,25 +47,118 @@ WindowToplevel::WindowToplevel(const char *title, int width, int height)
 
 void WindowToplevel::draw()
 {
-    if (this->needs_redraw)
+    Application *app = Application::get_instance();
+    if (!this->finished_launching)
     {
-        Application *app = Application::get_instance();
-
+        if (this->delegate == nullptr)
+        {
+            if (eglMakeCurrent(app->egl_provider.egl_display, this->egl_surface, this->egl_surface, app->egl_provider.egl_context) == EGL_FALSE)
+            {
+                std::cerr << "Failed to make EGL context current\n";
+            }
+            this->skia.surface->getCanvas()->clear(SK_ColorWHITE);
+            this->skia.surface->flushAndSubmit();
+            if (eglSwapBuffers(app->egl_provider.egl_display, this->egl_surface) == EGL_FALSE)
+            {
+                std::cerr << eglGetError() << " Failed to swap buffers\n";
+            }
+            return;
+        }
+        else
+        {
+            this->delegate->did_finish_launching(this);
+            this->finished_launching = true;
+            UI::Animation::Transaction::begin();
+            if (!root_view->loaded)
+            {
+                root_view->view_did_load();
+            }
+            this->root_view->layout_if_needed();
+            UI::Animation::Transaction::flush();
+        }
+    }
+    if (true)
+    {
         if (eglMakeCurrent(app->egl_provider.egl_display, this->egl_surface, this->egl_surface, app->egl_provider.egl_context) == EGL_FALSE)
         {
             std::cerr << "Failed to make EGL context current\n";
         }
 
-        SkPaint paint;
-        this->skia.surface->getCanvas()->drawCircle(SkPoint::Make(100, 100), 50, paint);
-        this->skia.surface->flushAndSubmit();
-
-        if (eglSwapBuffers(app->egl_provider.egl_display, this->egl_surface) == EGL_FALSE)
+        if (UI::Animation::AnimationCore::tick())
         {
-            std::cerr << eglGetError() << " Failed to swap buffers\n";
+            std::cout << "Tick\n";
+            this->skia.surface->getCanvas()->clear(SK_ColorWHITE);
+            this->render(this->root_view, SkPoint::Make(this->root_view->frame.x(), this->root_view->frame.y()));
+            this->skia.surface->flushAndSubmit();
+
+            if (eglSwapBuffers(app->egl_provider.egl_display, this->egl_surface) == EGL_FALSE)
+            {
+                std::cerr << eglGetError() << " Failed to swap buffers\n";
+            }
         }
 
         this->needs_redraw = false;
+    }
+}
+
+void WindowToplevel::render(View *view, SkPoint origin)
+{
+    if (!view->loaded)
+    {
+        view->view_did_load();
+    }
+
+    SkPoint new_origin = origin;
+    new_origin.offset(view->layer->frame.x(), view->layer->frame.y());
+
+    if (view->parent != nullptr)
+    {
+        new_origin.offset(view->parent->layer->bounds.x(), view->parent->layer->bounds.y());
+    }
+
+    SkRect layer_frame = SkRect::MakeXYWH(view->layer->frame.x(), view->layer->frame.y(), view->layer->frame.width(), view->layer->frame.height());
+
+    if (view->frame.width() != view->layer->frame.width() ||
+        view->frame.height() != view->layer->frame.height() ||
+        view->opacity != view->layer->opacity.get() ||
+        view->background_radius != view->layer->background_radius.get() ||
+        view->layer->needs_repaint || true)
+    {
+        view->layer->needs_repaint = true;
+        view->layer->draw();
+        view->layer->needs_repaint = false;
+    }
+
+    SkCanvas *canvas = this->skia.surface->getCanvas();
+
+    // if (view->drop_shadow)
+    // {
+    //     SkPaint paint;
+    //     paint.setColor(SK_ColorBLACK);
+    //     paint.setAntiAlias(true);
+    //     paint.setMaskFilter(SkMaskFilter::MakeBlur(kNormal_SkBlurStyle, 5.0f));
+    //     canvas->drawRRect(SkRRect::MakeRectXY(layer_frame, view->background_radius, view->background_radius), paint);
+    // }
+
+    if (view->clip_to_bounds)
+    {
+        SkRRect clip_rect = SkRRect::MakeRectXY(layer_frame, view->background_radius, view->background_radius);
+        canvas->save();
+        canvas->clipRRect(clip_rect, SkClipOp::kIntersect, true);
+        view->layer->backing_surface->draw(this->skia.surface->getCanvas(), new_origin.x(), new_origin.y());
+        for (UI::View *view : view->children)
+        {
+            this->render(view, new_origin);
+        }
+        canvas->restore();
+    }
+    else
+    {
+        view->layer->backing_surface->draw(this->skia.surface->getCanvas(), new_origin.x(), new_origin.y());
+        for (UI::View *view : view->children)
+        {
+            this->render(view, new_origin);
+        }
     }
 }
 

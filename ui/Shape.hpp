@@ -74,7 +74,7 @@ namespace UI::Shape
 
     public:
         AnimatableRect(){};
-        AnimatableRect(SkRect initial_rect);
+        AnimatableRect(int x, int y, int width, int height);
 
         virtual int x();
         virtual void set_x(int x);

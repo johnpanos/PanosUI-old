@@ -74,7 +74,7 @@ void Transaction::set_duration(int64_t duration)
 
 void Transaction::add_animation_for_property(AnimatableProperty *property, int start, int end)
 {
-    // std::cout << "Starting new animation\n";
+    std::cout << "Starting new animation\n";
     Transaction *transaction = transactions.top();
     Animation *animation = new Animation();
     animation->property = property;

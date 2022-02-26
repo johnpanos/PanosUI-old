@@ -150,10 +150,10 @@ namespace UI::Animation
             }
         }
 
-        static void tick()
+        static bool tick()
         {
             auto millisec_since_epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-            // // std::cout << "Size: " << animations.size() << "\n";
+            bool changed = animations.size() > 0;
             for (auto it = animations.begin(); it != animations.end();)
             {
                 Animation *animation = *it;
@@ -168,6 +168,8 @@ namespace UI::Animation
                     it++;
                 }
             }
+
+            return changed;
         }
     };
 

@@ -1,11 +1,37 @@
 #include "ui/Application.hpp"
 #include "ui/Window.hpp"
 #include "ui/WindowToplevel.hpp"
+#include "ui/View.hpp"
+
+class MyView : public UI::View
+{
+    using UI::View::View;
+
+    UI::View *view;
+
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
+        view = new UI::View(0, 0, 50, 50);
+        this->add_subview(view);
+    }
+
+    virtual void layout_subviews()
+    {
+        UI::View::animate(1000, [this]()
+                          { this->view->set_frame(UI::Shape::Rect(250, 250, 150, 510)); });
+    }
+};
 
 class MyWindow : public UI::WindowDelegate
 {
     virtual void did_finish_launching(UI::Window *window)
     {
+        UI::View *root_view = new MyView(0, 0, 500, 500);
+        root_view->background_color = SK_ColorBLACK;
+        window->root_view = root_view;
+        root_view->window = window;
+
         std::cout << "Finished launching\n";
     }
 };

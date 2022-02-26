@@ -8,7 +8,7 @@ namespace UI
     class EventResponder
     {
     public:
-        EventResponder *next;
+        EventResponder *next = nullptr;
 
         virtual void respond();
 

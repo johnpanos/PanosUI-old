@@ -5,6 +5,7 @@
 
 namespace UI
 {
+    class View;
     class Window;
 
     class WindowDelegate
@@ -22,10 +23,12 @@ namespace UI
         WindowDelegate *delegate = nullptr;
         Skia skia;
 
+        bool finished_launching = false;
+
         View *root_view = nullptr;
 
-        virtual void
-        draw() = 0;
+        virtual void draw() = 0;
+        virtual void render(View *view, SkPoint origin) = 0;
 
         virtual int get_width() = 0;
         virtual int get_height() = 0;

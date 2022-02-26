@@ -13,17 +13,24 @@ glx = dependency('glx')
 src = [
     'xdg-shell-protocol.c',
     'main.cpp',
+    'egl.cpp',
+
     'wayland/Display.cpp',
     'wayland/Registry.cpp',
     'wayland/Surface.cpp',
     'wayland/XDGSurface.cpp',
     'wayland/XDGToplevel.cpp',
-    'ui/Registry.cpp',
+
+    'ui/Animation.cpp',
     'ui/Application.cpp',
-    'ui/Window.cpp',
-    'ui/WindowToplevel.cpp',
+    'ui/EventResponder.cpp',
+    'ui/Layer.cpp',
+    'ui/Registry.cpp',
+    'ui/Shape.cpp',
     'ui/Skia.cpp',
-    'egl.cpp'
+    'ui/View.cpp',
+    'ui/Window.cpp',
+    'ui/WindowToplevel.cpp'
 ]
 
 skia = declare_dependency(link_args : ['-L/home/john/skia/out/linux/x64', '-lskia'],

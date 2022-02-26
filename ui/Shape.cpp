@@ -58,12 +58,12 @@ void Rect::set_height(int height)
     this->_height = height;
 }
 
-AnimatableRect::AnimatableRect(SkRect initial_rect)
+AnimatableRect::AnimatableRect(int x, int y, int width, int height)
 {
-    this->_x.value = initial_rect.x();
-    this->_y.value = initial_rect.y();
-    this->_width.value = initial_rect.width();
-    this->_height.value = initial_rect.height();
+    this->_x.value = x;
+    this->_y.value = y;
+    this->_width.value = width;
+    this->_height.value = height;
 }
 
 int AnimatableRect::x()
