@@ -5,6 +5,9 @@ namespace UI
 {
     class Window
     {
+    public:
+        virtual void draw() = 0;
+
         virtual int get_width() = 0;
         virtual int get_height() = 0;
 

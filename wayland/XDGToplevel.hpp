@@ -12,6 +12,7 @@ namespace Wayland
     {
     public:
         virtual void configure(XDGToplevel *toplevel, int width, int height) = 0;
+        virtual void close() = 0;
     };
 
     class XDGToplevel : public XDGSurface
@@ -21,6 +22,7 @@ namespace Wayland
         XDGToplevelListener *listener;
 
         XDGToplevel(struct xdg_wm_base *wm_base, struct wl_compositor *compositor);
+        ~XDGToplevel();
 
         void set_title(const char *title);
     };

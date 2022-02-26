@@ -12,7 +12,6 @@ namespace UI
 {
     class Application
     {
-
         std::vector<Window *> windows;
 
     public:
@@ -26,6 +25,8 @@ namespace UI
 
         void add_window(Window *window);
         void remove_window(Window *window);
+
+        void run();
     };
 };
 

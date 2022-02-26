@@ -17,10 +17,14 @@ namespace UI
         EGLSurface egl_surface;
         wl_egl_window *egl_window;
 
-        WindowToplevel(int width, int height);
+        WindowToplevel(const char *title, int width, int height);
+
+        bool needs_redraw;
 
         int width;
         int height;
+
+        virtual void draw();
 
         virtual int get_width();
         virtual int get_height();
@@ -28,6 +32,7 @@ namespace UI
         virtual void on_resize(int width, int height);
 
         virtual void configure(Wayland::XDGToplevel *toplevel, int width, int height);
+        virtual void close();
     };
 };
 

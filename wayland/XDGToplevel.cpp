@@ -14,8 +14,15 @@ xdg_toplevel_configure_handler(void *data,
     toplevel->listener->configure(toplevel, width, height);
 }
 
+static void xdg_toplevel_close_handler(void *data, struct xdg_toplevel *xdg_toplevel)
+{
+    XDGToplevel *toplevel = (XDGToplevel *)data;
+    toplevel->listener->close();
+}
+
 static const struct xdg_toplevel_listener xdg_top_level_listener = {
     .configure = xdg_toplevel_configure_handler,
+    .close = xdg_toplevel_close_handler,
 };
 
 XDGToplevel::XDGToplevel(struct xdg_wm_base *wm_base, struct wl_compositor *compositor) : XDGSurface(wm_base, compositor)
@@ -28,4 +35,9 @@ XDGToplevel::XDGToplevel(struct xdg_wm_base *wm_base, struct wl_compositor *comp
 void XDGToplevel::set_title(const char *title)
 {
     xdg_toplevel_set_title(this->xdg_toplevel, title);
+}
+
+XDGToplevel::~XDGToplevel()
+{
+    xdg_toplevel_destroy(this->xdg_toplevel);
 }

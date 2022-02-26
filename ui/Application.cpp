@@ -18,6 +18,8 @@ Application::Application()
     this->display.connect();
     this->display.get_registry();
     this->windows = std::vector<Window *>();
+
+    this->egl_provider.setup(this->display.wl_display);
 }
 
 Application::~Application()
@@ -37,9 +39,23 @@ void Application::add_window(Window *window)
 
 void Application::remove_window(Window *window)
 {
+    std::cout << "remove window\n";
     auto it = std::find(this->windows.begin(), this->windows.end(), window);
     if (it != this->windows.end())
     {
         this->windows.erase(it);
+    }
+}
+
+void Application::run()
+{
+    while (this->display.round_trip())
+    {
+        if (this->windows.empty())
+            break;
+        for (Window *window : this->windows)
+        {
+            window->draw();
+        }
     }
 }
