@@ -22,6 +22,7 @@ src = [
     'ui/Application.cpp',
     'ui/Window.cpp',
     'ui/WindowToplevel.cpp',
+    'ui/Skia.cpp',
     'egl.cpp'
 ]
 

@@ -19,13 +19,11 @@ void Registry::global(struct wl_registry *wl_registry,
 {
     if (strcmp(interface, wl_compositor_interface.name) == 0)
     {
-        std::cout << "compositor\n";
         this->wl_compositor = static_cast<struct wl_compositor *>(
             wl_registry_bind(wl_registry, name, &wl_compositor_interface, version));
     }
     else if (strcmp(interface, xdg_wm_base_interface.name) == 0)
     {
-        std::cout << "wm_base\n";
         this->xdg_wm_base = static_cast<struct xdg_wm_base *>(
             wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, 1));
         xdg_wm_base_add_listener(this->xdg_wm_base,

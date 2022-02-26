@@ -4,7 +4,7 @@
 int main()
 {
     UI::Application *app = UI::Application::get_instance();
-    UI::WindowToplevel *window = new UI::WindowToplevel("Window1", 500, 500);
+    UI::WindowToplevel *window = new UI::WindowToplevel("PanosUI", 500, 500);
     UI::WindowToplevel *window2 = new UI::WindowToplevel("Window2", 600, 500);
 
     app->add_window(window);
