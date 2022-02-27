@@ -58,6 +58,11 @@
         "semaphore": "cpp",
         "stop_token": "cpp",
         "thread": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "condition_variable": "cpp",
+        "set": "cpp",
+        "fstream": "cpp",
+        "mutex": "cpp",
+        "shared_mutex": "cpp"
     }
 }

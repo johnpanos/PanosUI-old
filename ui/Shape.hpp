@@ -36,6 +36,8 @@ namespace UI::Shape
                    this->width() == rect.width() &&
                    this->height() == rect.height();
         }
+
+        virtual ~IRect() = default;
     };
 
     class Rect : public IRect

@@ -16,6 +16,7 @@ src = [
     'egl.cpp',
 
     'wayland/Display.cpp',
+    'wayland/Pointer.cpp',
     'wayland/Registry.cpp',
     'wayland/Surface.cpp',
     'wayland/XDGSurface.cpp',

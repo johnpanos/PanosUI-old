@@ -41,10 +41,10 @@ void Display::get_registry()
 {
     this->registry->set_registry(wl_display_get_registry(this->wl_display));
     wl_display_dispatch(this->wl_display);
-    wl_display_roundtrip(this->wl_display);
 }
 
 bool Display::round_trip()
 {
+    wl_display_dispatch(this->wl_display);
     return wl_display_roundtrip(this->wl_display);
 }

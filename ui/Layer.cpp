@@ -33,7 +33,7 @@ void Layer::draw()
         this->ensure_layer();
         if (this->frame.height() > 1 && this->frame.width() > 1 && this->needs_repaint)
         {
-            std::cout << "I am drawing\n";
+            // std::cout << "I am drawing\n";
             this->delegate->draw(this);
             this->needs_repaint = false;
         }
@@ -42,8 +42,8 @@ void Layer::draw()
 
 void Layer::ensure_layer()
 {
-    std::cout << "Ensure layer\n";
-    std::cout << "" << frame.width() << " " << frame.height() << "\n";
+    // std::cout << "Ensure layer\n";
+    // std::cout << "" << frame.width() << " " << frame.height() << "\n";
     assert(frame.width() != 0);
     assert(frame.height() != 0);
     if (this->backing_surface == nullptr ||

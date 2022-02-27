@@ -29,4 +29,14 @@ void Registry::global(struct wl_registry *wl_registry,
         xdg_wm_base_add_listener(this->xdg_wm_base,
                                  &xdg_wm_base_listener, this);
     }
+    else if (strcmp(interface, wl_seat_interface.name) == 0)
+    {
+        std::cout << "Found seat\n";
+        this->wl_seat = static_cast<struct wl_seat *>(wl_registry_bind(wl_registry, name, &wl_seat_interface, 7));
+    }
+    else if (strcmp(interface, wl_shm_interface.name) == 0)
+    {
+        this->wl_shm = static_cast<struct wl_shm *>(
+            wl_registry_bind(wl_registry, name, &wl_shm_interface, 1));
+    }
 }

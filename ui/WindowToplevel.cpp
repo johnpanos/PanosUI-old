@@ -23,11 +23,16 @@ WindowToplevel::WindowToplevel(const char *title, int width, int height)
     std::cout << "Created WindowToplevel " << width << " " << height << "\n";
     Application *app = Application::get_instance();
 
+    this->seat = new Wayland::Seat(app->registry->wl_seat);
+    this->pointer = new Wayland::Pointer(app->registry->wl_compositor, app->registry->wl_shm);
+    this->pointer->delegate = this;
+    this->seat->add_listener(this->pointer);
+
     this->toplevel = new Wayland::XDGToplevel(app->registry->xdg_wm_base, app->registry->wl_compositor);
     this->toplevel->listener = this;
     this->toplevel->set_title(title);
-
     this->toplevel->commit();
+
     app->display.round_trip();
 
     this->egl_window = wl_egl_window_create(toplevel->wl_surface, width, height);
@@ -43,6 +48,16 @@ WindowToplevel::WindowToplevel(const char *title, int width, int height)
 
     this->on_resize(width, height);
     this->draw();
+}
+
+void WindowToplevel::add_root_view(View *view)
+{
+    this->root_view = view;
+
+    UI::Animation::Transaction::begin();
+    this->root_view->view_did_load();
+    this->root_view->layout_if_needed();
+    UI::Animation::Transaction::flush();
 }
 
 void WindowToplevel::draw()
@@ -86,7 +101,7 @@ void WindowToplevel::draw()
 
         if (UI::Animation::AnimationCore::tick())
         {
-            std::cout << "Tick\n";
+            // std::cout << "Tick\n";
             this->skia.surface->getCanvas()->clear(SK_ColorWHITE);
             this->render(this->root_view, SkPoint::Make(this->root_view->frame.x(), this->root_view->frame.y()));
             this->skia.surface->flushAndSubmit();

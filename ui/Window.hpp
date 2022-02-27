@@ -2,6 +2,7 @@
 #define _UI_WINDOW_H
 #include "View.hpp"
 #include "Skia.hpp"
+#include "../wayland/Pointer.hpp"
 
 namespace UI
 {
@@ -17,15 +18,29 @@ namespace UI
         }
     };
 
-    class Window
+    class Window : public Wayland::PointerDelegate
     {
     public:
+        virtual void on_mouse_motion(int x, int y)
+        {
+            this->x = x;
+            this->y = y;
+        }
+        virtual void on_mouse_click()
+        {
+            std::cout << "Click!\n";
+        };
+        virtual void on_mouse_up(){};
+        virtual void on_mouse_scroll(bool up){};
+
         WindowDelegate *delegate = nullptr;
         Skia skia;
 
         bool finished_launching = false;
 
         View *root_view = nullptr;
+
+        virtual void add_root_view(View *view) = 0;
 
         virtual void draw() = 0;
         virtual void render(View *view, SkPoint origin) = 0;

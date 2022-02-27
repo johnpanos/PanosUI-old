@@ -200,7 +200,7 @@ void View::view_did_load()
 
 void View::draw(Layer *layer)
 {
-    std::cout << "Drawing\n";
+    // std::cout << "Drawing\n";
     SkCanvas *canvas = layer->backing_surface->getCanvas();
     canvas->clear(SK_ColorTRANSPARENT);
 
