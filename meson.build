@@ -12,12 +12,14 @@ glx = dependency('glx')
 
 src = [
     'xdg-shell-protocol.c',
+    'wlr-layer-shell-unstable-v1.c',
     'main.cpp',
     'egl.cpp',
 
     'wayland/Display.cpp',
     'wayland/Pointer.cpp',
     'wayland/Registry.cpp',
+    'wayland/ShellSurface.cpp',
     'wayland/Surface.cpp',
     'wayland/XDGSurface.cpp',
     'wayland/XDGToplevel.cpp',

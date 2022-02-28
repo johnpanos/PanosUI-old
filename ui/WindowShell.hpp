@@ -1,0 +1,4 @@
+#ifndef _WAYLAND_WINDOW_SHELL_H
+#define _WAYLAND_WINDOW_SHELL_H
+
+#endif

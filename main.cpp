@@ -4,6 +4,8 @@
 #include "ui/View.hpp"
 #include "ui/widget/Label.hpp"
 
+#include "wayland/ShellSurface.hpp"
+
 #include <iostream>
 #include <thread>
 #include <queue>
@@ -14,193 +16,6 @@
 
 #include <include/core/SkFont.h>
 #include <include/core/SkTextBlob.h>
-
-// // class Button : public UI::View
-// // {
-// //     using UI::View::View;
-
-// // public:
-// //     std::function<void()> on_click_up;
-
-// //     Label *label;
-// //     std::string text;
-// //     int padding_horizontal = 0;
-// //     int padding_vertical = 0;
-
-// //     virtual void view_did_load()
-// //     {
-// //         UI::View::view_did_load();
-
-// //         label = new Label(SkRect::MakeEmpty());
-// //         label->set_value(this->text);
-// //         label->font = SkFont(nullptr, 18);
-// //         label->color = SkColorSetRGB(10, 132, 255);
-
-// //         this->add_subview(label);
-// //         label->size_to_fit();
-
-// //         this->set_frame(SkRect::MakeXYWH(this->frame.x(), this->frame.y(), label->frame.width() + padding_horizontal * 2, label->frame.height() + padding_vertical * 2));
-// //         label->set_frame(label->frame.makeOffset(padding_horizontal, padding_vertical));
-// //     }
-
-// //     virtual void on_mouse_click()
-// //     {
-// //         UI::View::animate(50, [this]()
-// //                           { this->label->set_opacity(150); });
-// //     }
-
-// //     virtual void on_mouse_up(int x, int y)
-// //     {
-// //         UI::View::animate(100, [this]()
-// //                           { this->label->set_opacity(255); });
-// //         if (this->on_click_up != nullptr)
-// //         {
-// //             this->on_click_up();
-// //         }
-// //     }
-// // };
-
-// class CircleView : public UI::View
-// {
-//     using UI::View::View;
-
-//     int PADDING = 2;
-
-//     int size;
-//     int center;
-
-//     virtual void view_did_load()
-//     {
-//         UI::View::view_did_load();
-
-//         this->PADDING = (int)((float)this->parent->frame.height() * (4.0f / 51.0f));
-
-//         this->size = (int)((float)this->parent->frame.height() * .88f);
-//         this->center = (this->parent->frame.height() / 2) - size / 2;
-
-//         this->set_background_radius(this->parent->frame.height());
-
-//         this->value = false;
-
-//         this->set_frame(SkRect::MakeXYWH(PADDING, center, size, size));
-//     }
-
-// public:
-//     bool value;
-
-//     void queue_animation()
-//     {
-//         auto animation_lambda = [this]()
-//         {
-//             if (this->value)
-//             {
-//                 this->set_frame(SkRect::MakeXYWH(this->parent->frame.width() - size - PADDING, center, size, size));
-//             }
-//             else
-//             {
-//                 this->set_frame(SkRect::MakeXYWH(PADDING, center, size, size));
-//             }
-//         };
-
-//         UI::View::animate(250, animation_lambda);
-//     }
-
-//     void toggle()
-//     {
-//         this->value = !this->value;
-//         this->queue_animation();
-//     }
-// };
-
-// class MyView : public UI::View
-// {
-// public:
-//     using UI::View::View;
-
-//     UI::View *green_view;
-//     CircleView *circle_view;
-
-//     static const int WIDTH = 51;
-//     static const int HEIGHT = 31;
-
-//     virtual void
-//     view_did_load()
-//     {
-//         UI::View::view_did_load();
-
-//         this->set_frame(SkRect::MakeXYWH(0, 0, WIDTH, HEIGHT));
-
-//         this->layer->background_radius.set(31);
-
-//         // gray
-//         this->background_color = SkColorSetARGB(255, 120, 120, 128);
-//         this->set_opacity(40);
-
-//         green_view = new UI::View(SkRect::MakeXYWH(0, 0, WIDTH, HEIGHT));
-//         this->add_subview(green_view);
-//         // green
-//         green_view->layer->background_radius.set(31);
-//         green_view->background_color = SkColorSetARGB(255, 52, 199, 89);
-//         green_view->set_opacity(0);
-
-//         circle_view = new CircleView(SkRect::MakeXYWH(0, 0, 10, 10));
-
-//         this->add_subview(circle_view);
-//     }
-
-//     void toggle()
-//     {
-//         this->circle_view->toggle();
-
-//         auto animation_lambda = [this]()
-//         {
-//             if (this->circle_view->value)
-//             {
-//                 this->green_view->set_opacity(255);
-//             }
-//             else
-//             {
-//                 this->green_view->set_opacity(0);
-//             }
-//         };
-
-//         UI::View::animate(300, animation_lambda);
-//     }
-
-//     virtual void on_mouse_click()
-//     {
-//         // std::cout << "new mouse down\n";
-//         // auto animation_lambda = [this]()
-//         // {
-//         //     SkRect new_frame = this->circle_view->frame;
-//         //     new_frame.setXYWH(new_frame.x(), new_frame.y(), new_frame.width() * 1.1, new_frame.height());
-//         //     this->circle_view->set_frame(new_frame);
-//         // };
-
-//         // UI::View::animate(150, animation_lambda);
-//     }
-
-//     virtual void on_mouse_up(int x, int y)
-//     {
-//         // std::cout << "Click from UISwitch!\n";
-//         UI::View::on_mouse_up(x, y);
-//         if (this->point_inside(SkPoint::Make(x, y)))
-//         {
-//             this->toggle();
-//         }
-//         // else
-//         // {
-//         //     auto animation_lambda = [this]()
-//         //     {
-//         //         SkRect new_frame = this->circle_view->frame;
-//         //         new_frame.setXYWH(new_frame.x(), new_frame.y(), new_frame.height(), new_frame.height());
-//         //         this->circle_view->set_frame(new_frame);
-//         //     };
-
-//         //     UI::View::animate(150, animation_lambda);
-//         // }
-//     }
-// };
 
 class HoverView : public UI::View
 {
@@ -454,9 +269,43 @@ class MyWindowDelegate : public UI::WindowDelegate
 int main()
 {
     UI::Application *app = UI::Application::get_instance();
-    UI::WindowToplevel *window = new UI::WindowToplevel("PanosUI", 500, 500);
-    window->delegate = new MyWindowDelegate();
+    Wayland::ShellSurface *shell_surface = new Wayland::ShellSurface(app->registry->layer_shell, app->registry->wl_outputs.at(0), app->registry->wl_compositor);
+    shell_surface->commit();
+    app->display.round_trip();
 
-    app->add_window(window);
-    app->run();
+    UI::Skia skia;
+    EGLSurface egl_surface;
+    wl_egl_window *egl_window;
+
+    egl_window = wl_egl_window_create(shell_surface->wl_surface, 100, 100);
+    egl_surface = eglCreateWindowSurface(app->egl_provider.egl_display, app->egl_provider.egl_config, egl_window, nullptr);
+
+    if (egl_surface == EGL_NO_SURFACE)
+    {
+        std::cerr << "Failed to create EGL window surface\n";
+    }
+
+    if (eglMakeCurrent(app->egl_provider.egl_display, egl_surface, egl_surface, app->egl_provider.egl_context) == EGL_FALSE)
+    {
+        std::cerr << "Failed to make EGL context current\n";
+    }
+
+    skia.setup(100, 100);
+
+    skia.surface->getCanvas()->clear(SK_ColorWHITE);
+    skia.surface->flushAndSubmit();
+
+    if (eglSwapBuffers(app->egl_provider.egl_display, egl_surface) == EGL_FALSE)
+    {
+        std::cerr << eglGetError() << " Failed to swap buffers\n";
+    }
+
+    while (app->display.round_trip())
+        ;
+
+    // UI::WindowToplevel *window = new UI::WindowToplevel("PanosUI", 500, 500);
+    // window->delegate = new MyWindowDelegate();
+
+    // app->add_window(window);
+    // app->run();
 }

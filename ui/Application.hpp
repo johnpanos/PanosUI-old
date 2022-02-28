@@ -2,6 +2,7 @@
 #define _UI_APPLICATION_H
 
 #include <vector>
+#include <unordered_map>
 #include <functional>
 #include "../egl.hpp"
 #include "../wayland/Wayland.hpp"
@@ -10,9 +11,12 @@
 
 namespace UI
 {
+    class Window;
+
     class Application
     {
         std::vector<Window *> windows;
+        std::unordered_map<struct wl_surface *, Window *> surface_to_window;
 
     public:
         Wayland::Display display;

@@ -39,4 +39,15 @@ void Registry::global(struct wl_registry *wl_registry,
         this->wl_shm = static_cast<struct wl_shm *>(
             wl_registry_bind(wl_registry, name, &wl_shm_interface, 1));
     }
+    else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0)
+    {
+        this->layer_shell = static_cast<struct zwlr_layer_shell_v1 *>(wl_registry_bind(wl_registry, name,
+                                                                                       &zwlr_layer_shell_v1_interface, version < 4 ? version : 4));
+    }
+    else if (strcmp(interface, "wl_output") == 0)
+    {
+        std::cout << "Output found\n";
+        this->wl_outputs.emplace_back(static_cast<struct wl_output *>(wl_registry_bind(wl_registry, name,
+                                                                                       &wl_output_interface, 1)));
+    }
 }
