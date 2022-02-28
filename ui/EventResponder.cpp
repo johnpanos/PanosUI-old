@@ -59,11 +59,11 @@ void EventResponder::on_mouse_drag(SkPoint delta)
     }
 }
 
-void EventResponder::on_mouse_scroll(int delta)
+void EventResponder::on_mouse_scroll(bool discrete, int delta, bool is_scrolling)
 {
     if (this->next != nullptr)
     {
         std::cout << "Passing mouse scroll\n";
-        this->next->on_mouse_scroll(delta);
+        this->next->on_mouse_scroll(discrete, delta, is_scrolling);
     }
 }

@@ -31,7 +31,9 @@ src = [
     'ui/Skia.cpp',
     'ui/View.cpp',
     'ui/Window.cpp',
-    'ui/WindowToplevel.cpp'
+    'ui/WindowToplevel.cpp',
+
+    'ui/widget/Label.cpp'
 ]
 
 skia = declare_dependency(link_args : ['-L/home/john/skia/out/linux/x64', '-lskia'],

@@ -2,110 +2,18 @@
 #include "ui/Window.hpp"
 #include "ui/WindowToplevel.hpp"
 #include "ui/View.hpp"
+#include "ui/widget/Label.hpp"
 
-class MyView : public UI::View
-{
-    using UI::View::View;
+#include <iostream>
+#include <thread>
+#include <queue>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+#include <random>
 
-    UI::View *view;
-
-    virtual void view_did_load()
-    {
-        UI::View::view_did_load();
-        view = new UI::View(0, 0, 50, 50);
-        this->add_subview(view);
-    }
-
-    virtual void layout_subviews()
-    {
-        UI::View::animate(1000, [this]()
-                          { this->view->set_frame(UI::Shape::Rect(250, 250, 150, 510)); });
-    }
-};
-
-class MyWindow : public UI::WindowDelegate
-{
-    virtual void did_finish_launching(UI::Window *window)
-    {
-        UI::View *root_view = new MyView(0, 0, 500, 500);
-        root_view->background_color = SK_ColorBLACK;
-        window->root_view = root_view;
-        root_view->window = window;
-
-        std::cout << "Finished launching\n";
-    }
-};
-
-int main()
-{
-    UI::Application *app = UI::Application::get_instance();
-    UI::WindowToplevel *window = new UI::WindowToplevel("PanosUI", 500, 500);
-
-    MyWindow *my_window = new MyWindow();
-    window->delegate = my_window;
-
-    app->add_window(window);
-    app->run();
-}
-
-// #include <iostream>
-// #include <thread>
-// #include <queue>
-// #include <ctime>
-// #include <iomanip>
-// #include <sstream>
-// #include <random>
-// #include "UIApplication.hpp"
-// #include "UIWindow.hpp"
-// #include "UIView.hpp"
-// #include "UIAnimation.hpp"
-
-// #include <include/core/SkFont.h>
-// #include <include/core/SkTextBlob.h>
-
-// class Label : public UI::View
-// {
-//     using UI::View::View;
-
-//     std::string value;
-//     SkRect text_bounds;
-
-// public:
-//     SkFont font;
-//     SkColor color;
-
-//     void size_to_fit()
-//     {
-//         (void)font.measureText(value.c_str(), strlen(value.c_str()), SkTextEncoding::kUTF8, &this->text_bounds);
-//         this->set_frame(UI::Shape::Rect(this->frame.x(), this->frame.y(), text_bounds.width(), text_bounds.height()));
-//     }
-
-//     virtual void view_did_load()
-//     {
-//         UI::View::view_did_load();
-//         this->background_color = SK_ColorTRANSPARENT;
-//     }
-
-//     void set_value(std::string str)
-//     {
-//         this->value = str;
-//     }
-
-//     virtual void draw(UI::Layer *layer)
-//     {
-//         UI::View::draw(layer);
-
-//         SkCanvas *canvas = layer->backing_surface->getCanvas();
-
-//         SkPaint paint;
-
-//         paint.setColor(this->color);
-//         paint.setAlpha(layer->opacity.get());
-
-//         font.setSubpixel(true);
-//         canvas->drawSimpleText(this->value.c_str(), strlen(this->value.c_str()), SkTextEncoding::kUTF8, -text_bounds.x(), -text_bounds.y(), font, paint);
-//     }
-// };
+#include <include/core/SkFont.h>
+#include <include/core/SkTextBlob.h>
 
 // // class Button : public UI::View
 // // {
@@ -294,273 +202,261 @@ int main()
 //     }
 // };
 
-// class HoverView : public UI::View
-// {
-//     using UI::View::View;
+class HoverView : public UI::View
+{
+    using UI::View::View;
 
-//     virtual void view_did_load()
-//     {
-//         UI::View::view_did_load();
-//         this->opacity = 150;
-//         this->layer->opacity.set(150);
-//     }
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
+        this->opacity = 150;
+        this->layer->opacity.set(150);
+    }
 
-//     int x_before = 0;
+    int x_before = 0;
 
-//     virtual void on_mouse_click()
-//     {
-//         this->x_before = this->frame.x();
-//     }
+    virtual void on_mouse_click()
+    {
+        this->x_before = this->frame.x();
+    }
 
-//     virtual void on_mouse_up(int x, int y)
-//     {
+    virtual void on_mouse_up(int x, int y)
+    {
 
-//         UI::View::animate(250, [this]()
-//                           {
-//         UI::Shape::Rect rect = this->frame;
-//         rect.set_x(this->x_before);
-//         this->set_frame(rect); });
-//     }
+        UI::View::animate(250, [this]()
+                          {
+        UI::Shape::Rect rect = this->frame;
+        rect.set_x(this->x_before);
+        this->set_frame(rect); });
+    }
 
-//     virtual void on_mouse_drag(SkPoint delta)
-//     {
-//         UI::Shape::Rect rect = this->frame;
-//         rect.set_x(x_before + delta.x());
-//         this->set_frame(rect);
-//     }
+    virtual void on_mouse_drag(SkPoint delta)
+    {
+        UI::Shape::Rect rect = this->frame;
+        rect.set_x(x_before + delta.x());
+        this->set_frame(rect);
+    }
 
-//     virtual void on_mouse_enter()
-//     {
-//         UI::View::animate(250, [this]()
-//                           { this->set_opacity(255); });
-//     }
+    virtual void on_mouse_enter()
+    {
+        UI::View::animate(250, [this]()
+                          { this->set_opacity(255); });
+    }
 
-//     virtual void on_mouse_exit()
-//     {
-//         UI::View::animate(500, [this]()
-//                           { this->set_opacity(150); });
-//     }
-// };
+    virtual void on_mouse_exit()
+    {
+        UI::View::animate(500, [this]()
+                          { this->set_opacity(150); });
+    }
+};
 
-// class ShellView : public UI::View
-// {
-//     using UI::View::View;
+class ShellView : public UI::View
+{
+    using UI::View::View;
 
-//     Label *time_label;
-//     HoverView *menu_button;
-//     HoverView *program_view;
+    UI::Label *time_label;
+    HoverView *menu_button;
+    HoverView *program_view;
 
-//     virtual void view_did_load()
-//     {
-//         UI::View::view_did_load();
-//         this->background_color = SkColorSetARGB(230, 47, 53, 69);
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
+        this->background_color = SkColorSetARGB(230, 47, 53, 69);
 
-//         menu_button = new HoverView(UI::Shape::Rect(8, 4, 24, 24));
-//         this->add_subview(menu_button);
-//         menu_button->background_color = SkColorSetARGB(255, 150, 150, 150);
-//         menu_button->set_background_radius(8);
+        menu_button = new HoverView(UI::Shape::Rect(8, 4, 24, 24));
+        this->add_subview(menu_button);
+        menu_button->background_color = SkColorSetARGB(255, 150, 150, 150);
+        menu_button->set_background_radius(8);
 
-//         program_view = new HoverView(UI::Shape::Rect(this->menu_button->frame.width() + this->menu_button->frame.x() + 12, 4, 130, 24));
-//         this->add_subview(program_view);
-//         program_view->background_color = SkColorSetARGB(255, 150, 150, 150);
-//         program_view->set_background_radius(8);
+        program_view = new HoverView(UI::Shape::Rect(this->menu_button->frame.width() + this->menu_button->frame.x() + 12, 4, 130, 24));
+        this->add_subview(program_view);
+        program_view->background_color = SkColorSetARGB(255, 150, 150, 150);
+        program_view->set_background_radius(8);
 
-//         // time_label = new Label(UI::Shape::Rect(0, 0, 10, 10));
-//         // time_label->set_value("5:00 AM");
-//         // time_label->font = SkFont(SkTypeface::MakeFromName("FreeMono", SkFontStyle::Normal()), 1);
-//         // time_label->font.setSubpixel(true);
-//         // time_label->color = SK_ColorWHITE;
-//         // this->add_subview(time_label);
-//     }
+        time_label = new UI::Label();
+        time_label->set_contents("5:00 AM");
+        time_label->color = SK_ColorWHITE;
+        this->add_subview(time_label);
+    }
 
-//     virtual void layout_subviews()
-//     {
-//         std::cout << this->frame.width() << "\n";
-//         // auto t = std::time(nullptr);
-//         // auto tm = *std::localtime(&t);
-//         // std::ostringstream oss;
-//         // oss << std::put_time(&tm, "%I:%M %p");
-//         // std::string str = oss.str();
+    virtual void layout_subviews()
+    {
+        auto t = std::time(nullptr);
+        auto tm = *std::localtime(&t);
+        std::ostringstream oss;
+        oss << std::put_time(&tm, "%I:%M %p");
+        std::string str = oss.str();
 
-//         // if (str.front() == '0')
-//         // {
-//         //     std::cout << "begins with 0\n";
-//         //     str.erase(0, 1);
-//         // }
+        if (str.front() == '0')
+        {
+            std::cout << "begins with 0\n";
+            str.erase(0, 1);
+        }
 
-//         // this->time_label->set_value(str);
-//         // this->time_label->size_to_fit();
+        this->time_label->set_contents(str);
+        this->time_label->size_to_fit();
 
-//         // int width = this->time_label->frame.width();
-//         // int height = this->time_label->frame.height();
-//         // int x = this->frame.width() - width - 12;
-//         // int y = this->frame.height() / 2 - height / 2;
-//         // this->time_label->set_frame(UI::Shape::Rect(x, y, width, height));
-//     }
-// };
+        int width = this->time_label->frame.width();
+        int height = this->time_label->frame.height();
+        int x = this->frame.width() - width - 12;
+        int y = this->frame.height() / 2 - height / 2;
+        this->time_label->set_frame(UI::Shape::Rect(x, y, width, height));
+    }
+};
 
-// class ScrollView : public UI::View
-// {
-//     using UI::View::View;
+class ScrollView : public UI::View
+{
+    using UI::View::View;
 
-//     virtual void view_did_load()
-//     {
-//         UI::View::view_did_load();
+    UI::View *scroll_indicator;
 
-//         this->clip_to_bounds = true;
-//         this->drop_shadow = true;
-//         this->background_radius = 32;
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
 
-//         std::random_device rd;                         // obtain a random number from hardware
-//         std::mt19937 gen(rd());                        // seed the generator
-//         std::uniform_int_distribution<> distr(0, 255); // define the range
+        this->scroll_indicator = new UI::View(0, 0, 10, 10);
+        this->scroll_indicator->background_radius = 16;
 
-//         for (int i = 0; i < 10; i++)
-//         {
-//             int r = distr(gen);
-//             int b = distr(gen);
-//             int g = distr(gen);
-//             UI::View *new_view = new UI::View(0, 0, 10, 10);
-//             new_view->background_color = SkColorSetRGB(r, g, b);
+        this->clip_to_bounds = true;
+        this->drop_shadow = true;
+        this->background_radius = 32;
 
-//             this->add_subview(new_view);
-//         }
-//     }
+        std::random_device rd;                         // obtain a random number from hardware
+        std::mt19937 gen(rd());                        // seed the generator
+        std::uniform_int_distribution<> distr(0, 255); // define the range
 
-//     int prev_y = 0;
-//     const static int height = 64;
+        for (int i = 0; i < 10; i++)
+        {
+            int r = distr(gen);
+            int b = distr(gen);
+            int g = distr(gen);
+            UI::View *new_view = new UI::View(0, 0, 10, 10);
+            new_view->background_color = SkColorSetRGB(r, g, b);
 
-//     virtual void layout_subviews()
-//     {
-//         for (int i = 0; i < 10; i++)
-//         {
-//             UI::View *view = children.at(i);
-//             view->layer->opacity.set(150);
-//             view->set_frame(UI::Shape::Rect(0, height * i, this->frame.width(), 64));
-//         }
-//         scroll_end();
-//     }
+            this->add_subview(new_view);
+        }
 
-//     int scroll_end()
-//     {
-//         int d = std::min(0, (int)(this->layer->bounds.y()));
-//         d = std::max(-(int)(height * children.size()) + this->frame.height(), d);
-//         this->set_bounds(UI::Shape::Rect(0, d, this->bounds.width(), this->bounds.height()));
-//     }
+        this->add_subview(this->scroll_indicator);
+    }
 
-//     virtual void on_mouse_up(int x, int y)
-//     {
-//         UI::View::animate(250, [this]()
-//                           { this->scroll_end(); });
-//     }
+    int prev_y = 0;
+    const static int height = 64;
 
-//     virtual void on_mouse_drag(SkPoint delta)
-//     {
-//         this->layer->bounds.set_y(this->bounds.y() + delta.y());
-//     }
+    virtual void layout_subviews()
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            UI::View *view = children.at(i);
+            view->layer->opacity.set(150);
+            view->set_frame(UI::Shape::Rect(0, height * i, this->frame.width(), 64));
+        }
 
-//     virtual void on_mouse_scroll(int delta)
-//     {
-//         this->layer->bounds.set_y(this->bounds.y() + delta);
-//         scroll_end();
-//     }
-// };
+        int width = this->frame.width();
+        int height = this->frame.height();
+        this->scroll_indicator->set_frame(UI::Shape::Rect(width - 16, 0, 16, 64));
+    }
 
-// // class SidebarView : public UI::View
-// // {
-// //     using UI::View::View;
+    int scroll_end()
+    {
+        int d = std::min(0, (int)(this->layer->bounds.y()));
+        d = std::max(-(int)(height * children.size()) + this->frame.height(), d);
+        this->set_bounds(UI::Shape::Rect(0, d, this->bounds.width(), this->bounds.height()));
+    }
 
-// //     UI::View *picture_view;
-// //     Label *name_label;
-// //     MyView *switch_view;
+    virtual void on_mouse_up(int x, int y)
+    {
+        // UI::View::animate(250, [this]()
+        //                   { this->scroll_end(); });
+    }
 
-// //     virtual void view_did_load()
-// //     {
-// //         UI::View::view_did_load();
+    virtual void on_mouse_drag(SkPoint delta)
+    {
+        // this->layer->bounds.set_y(this->bounds.y() + delta.y());
+    }
 
-// //         this->picture_view = new UI::View(SkRect::MakeEmpty());
+    virtual void on_mouse_scroll(bool discrete, int delta, bool is_scrolling)
+    {
+        if (!discrete)
+        {
+            if (is_scrolling)
+            {
+                this->layer->bounds.set_y(this->layer->bounds.y() + (delta / 64));
+            }
+            else
+            {
+                std::cout << "Animate scroll\n";
+                UI::View::animate(250, [this]()
+                                  { this->scroll_end(); });
+            }
+        }
+        else
+        {
+            int d = (delta < 0) ? 64 : -64;
+            this->set_bounds(UI::Shape::Rect(0, this->bounds.y() + d, this->bounds.width(), this->bounds.height()));
+        }
+    }
+};
 
-// //         this->name_label = new Label(SkRect::MakeEmpty());
-// //         this->name_label->color = SK_ColorWHITE;
-// //         this->name_label->font = SkFont(nullptr, 18);
-// //         this->name_label->set_value("John Panos");
+class RootView : public UI::View
+{
+    using UI::View::View;
 
-// //         this->add_subview(picture_view);
-// //         this->add_subview(name_label);
+    UI::View *test_view;
+    ShellView *shell_view;
+    ScrollView *scroll_view;
 
-// //         this->name_label->size_to_fit();
+    UI::Label *label;
 
-// //         switch_view = new MyView(SkRect::MakeEmpty());
-// //         this->add_subview(switch_view);
-// //     }
+    virtual void view_did_load()
+    {
+        UI::View::view_did_load();
+        this->background_color = SkColorSetRGB(33, 33, 33);
 
-// //     virtual void layout_subviews()
-// //     {
-// //         this->picture_view->layer->background_radius.set(64);
-// //         this->picture_view->set_frame(SkRect::MakeXYWH(16, 16, 64, 64));
+        this->label = new UI::Label();
+        this->label->set_contents("Edging.");
+        this->label->set_font_size(48);
+        this->label->color = SK_ColorWHITE;
+        this->add_subview(label);
 
-// //         SkRect picture_frame = this->picture_view->frame;
+        this->shell_view = new ShellView(0, 0, 10, 10);
+        this->add_subview(shell_view);
 
-// //         SkRect name_frame = this->name_label->frame;
-// //         this->name_label->set_frame(SkRect::MakeXYWH(picture_frame.x() + picture_frame.width() + 8,
-// //                                                      picture_frame.height() / 2 + name_frame.height() / 2, name_frame.width(), name_frame.height()));
-// //     }
-// // };
+        this->scroll_view = new ScrollView(0, 0, 100, 100);
+        this->add_subview(scroll_view);
+    }
 
-// class RootView : public UI::View
-// {
-//     using UI::View::View;
+    virtual void layout_subviews()
+    {
+        int width = this->frame.width();
+        int height = this->frame.height();
+        std::cout << width << "\n";
 
-//     UI::View *test_view;
-//     MyView *switch_view;
-//     ShellView *shell_view;
+        this->label->size_to_fit();
+        int label_width = this->label->frame.width();
+        int label_height = this->label->frame.height();
+        int x = width / 2 - label_width / 2;
+        int y = 32;
+        this->label->set_frame(UI::Shape::Rect(x, y, label_width, label_height));
 
-//     Label *label;
+        this->shell_view->set_frame(UI::Shape::Rect(0, height - 32, width, 32));
+        this->scroll_view->set_frame(UI::Shape::Rect(width / 4, height / 4, width / 2, height / 2));
+    }
+};
 
-//     virtual void view_did_load()
-//     {
-//         UI::View::view_did_load();
-//         this->background_color = SkColorSetRGB(33, 33, 33);
+class MyWindowDelegate : public UI::WindowDelegate
+{
+    virtual void did_finish_launching(UI::Window *window)
+    {
+        window->add_root_view(new RootView(0, 0, 500, 500));
+    }
+};
 
-//         this->label = new Label(0, 0, 10, 10);
-//         this->label->set_value("Hello World");
-//         this->label->color = SK_ColorWHITE;
-//         this->label->font = SkFont(SkTypeface::MakeFromName("FreeMono", SkFontStyle::Normal()), 18);
-//         this->add_subview(label);
+int main()
+{
+    UI::Application *app = UI::Application::get_instance();
+    UI::WindowToplevel *window = new UI::WindowToplevel("PanosUI", 500, 500);
+    window->delegate = new MyWindowDelegate();
 
-//         this->switch_view = new MyView(0, 0, 10, 10);
-//         this->add_subview(switch_view);
-
-//         this->shell_view = new ShellView(0, 0, 10, 10);
-//         this->add_subview(shell_view);
-//     }
-
-//     virtual void layout_subviews()
-//     {
-//         int width = this->frame.width();
-//         int height = this->frame.height();
-//         std::cout << width << "\n";
-
-//         this->label->size_to_fit();
-//         this->shell_view->set_frame(UI::Shape::Rect(0, height - 32, width, 32));
-//     }
-// };
-
-// class MyWindowDelegate : public UI::WindowDelegate
-// {
-//     virtual void did_finish_launching(UI::Window *window)
-//     {
-//         window->root_view = new RootView(0, 0, 500, 500);
-//         window->root_view->parent = nullptr;
-//         window->root_view->next = nullptr;
-//     }
-// };
-
-// int main()
-// {
-//     UI::Application *app = UI::Application::getInstance();
-//     UI::Window *window = new UI::Window("PanosUI", SkRect::MakeXYWH(0, 0, 500, 500));
-//     window->delegate = new MyWindowDelegate();
-
-//     app->run(window);
-// }
+    app->add_window(window);
+    app->run();
+}

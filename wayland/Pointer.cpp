@@ -65,7 +65,7 @@ static void wl_pointer_motion(void *data, struct wl_pointer *wl_pointer,
     int cur_x = wl_fixed_to_int(surface_x);
     int cur_y = wl_fixed_to_int(surface_y);
 
-    pointer->delegate->on_mouse_motion(cur_x, cur_y);
+    pointer->handle_motion(cur_x, cur_y);
 }
 
 static void wl_pointer_button(void *data, struct wl_pointer *wl_pointer,
@@ -89,34 +89,33 @@ static void wl_pointer_axis(void *data, struct wl_pointer *wl_pointer,
     Pointer *pointer = static_cast<Pointer *>(data);
     if (axis == 0)
     {
-        pointer->delegate->on_mouse_scroll(value < 0);
+        pointer->handle_scroll(value);
     }
-    std::cout << axis << ": " << value << "\n";
 }
 
 static void wl_pointer_frame(void *data, struct wl_pointer *wl_pointer)
 {
-    // Who cares
-    std::cout << "frame\n";
+    Pointer *pointer = static_cast<Pointer *>(data);
+    pointer->handle_frame();
 }
 
 static void wl_pointer_axis_source(void *data, struct wl_pointer *wl_pointer,
                                    uint32_t axis_source)
 {
-    // Who cares
 }
 
 static void wl_pointer_axis_stop(void *data, struct wl_pointer *wl_pointer,
                                  uint32_t time, uint32_t axis)
 {
-    // Who cares
+    Pointer *pointer = static_cast<Pointer *>(data);
+    pointer->handle_scroll_stop();
 }
 
 static void wl_pointer_axis_discrete(void *data, struct wl_pointer *wl_pointer,
                                      uint32_t axis, int32_t discrete)
 {
-    // Who cares
-    std::cout << "Discrete:" << discrete << "\n";
+    Pointer *pointer = static_cast<Pointer *>(data);
+    pointer->handle_discrete();
 }
 
 struct wl_pointer_listener pointer_listener = {
@@ -144,5 +143,48 @@ void Pointer::handle_capabilities(struct wl_seat *wl_seat, uint32_t caps)
     {
         wl_pointer_release(this->wl_pointer);
         this->wl_pointer = nullptr;
+    }
+}
+
+void Pointer::handle_motion(int x, int y)
+{
+    this->pending_mouse_event.already_sent = false;
+    this->pending_mouse_event.x = x;
+    this->pending_mouse_event.y = y;
+}
+
+void Pointer::handle_scroll(int value)
+{
+    this->pending_event.already_sent = false;
+    this->pending_event.delta = value;
+}
+
+void Pointer::handle_scroll_stop()
+{
+    this->pending_event.scrolling_has_stopped = true;
+}
+
+void Pointer::handle_discrete()
+{
+    this->pending_event.discrete = true;
+}
+
+void Pointer::handle_frame()
+{
+    std::cout << "\n\nFrame received\n";
+
+    if (!this->pending_mouse_event.already_sent)
+    {
+        this->pending_mouse_event.already_sent = true;
+        this->delegate->on_mouse_motion(this->pending_mouse_event.x, this->pending_mouse_event.y);
+    }
+
+    if (!this->pending_event.already_sent || this->pending_event.scrolling_has_stopped)
+    {
+        ScrollEvent event = this->pending_event;
+        this->delegate->on_mouse_scroll(event.discrete, event.delta, !event.scrolling_has_stopped);
+        this->pending_event.already_sent = true;
+        this->pending_event.discrete = false;
+        this->pending_event.scrolling_has_stopped = false;
     }
 }

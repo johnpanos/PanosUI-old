@@ -31,14 +31,16 @@ namespace UI
             std::cout << "Click!\n";
         };
         virtual void on_mouse_up(){};
-        virtual void on_mouse_scroll(bool up){};
+        virtual void on_mouse_scroll(bool discrete, int delta, bool is_scrolling){};
 
         WindowDelegate *delegate = nullptr;
         Skia skia;
 
         bool finished_launching = false;
+        bool needs_layout = false;
 
         View *root_view = nullptr;
+        View *hovered_view = nullptr;
 
         virtual void add_root_view(View *view) = 0;
 

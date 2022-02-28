@@ -14,17 +14,13 @@ namespace UI
     class WindowToplevel : public Window, public Wayland::XDGToplevelListener
     {
     public:
-        virtual void on_mouse_motion(int x, int y)
-        {
-            this->x = x;
-            this->y = y;
-        }
+        virtual void on_mouse_motion(int x, int y);
         virtual void on_mouse_click()
         {
             std::cout << "Click!\n";
         };
         virtual void on_mouse_up(){};
-        virtual void on_mouse_scroll(bool up){};
+        virtual void on_mouse_scroll(bool discrete, int delta, bool is_scrolling);
 
         Wayland::XDGToplevel *toplevel;
         EGLSurface egl_surface;
@@ -48,6 +44,7 @@ namespace UI
         virtual int get_width();
         virtual int get_height();
 
+        virtual void flush_and_submit();
         virtual void on_resize(int width, int height);
 
         virtual void configure(Wayland::XDGToplevel *toplevel, int width, int height);

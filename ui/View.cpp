@@ -62,6 +62,8 @@ void View::set_bounds(Shape::Rect bounds)
 {
     this->bounds = bounds;
     this->layer->set_bounds(bounds);
+
+    this->set_needs_layout();
 }
 
 void View::add_subview(View *view)
@@ -182,6 +184,7 @@ void View::layout_if_needed()
 
 void View::set_needs_layout()
 {
+    this->window->needs_layout = true;
 }
 
 void View::view_did_load()

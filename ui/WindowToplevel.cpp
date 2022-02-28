@@ -47,12 +47,54 @@ WindowToplevel::WindowToplevel(const char *title, int width, int height)
     wl_callback_add_listener(cb, &frame_listener, this);
 
     this->on_resize(width, height);
-    this->draw();
+
+    this->skia.surface->getCanvas()->clear(SK_ColorWHITE);
+    this->skia.surface->flushAndSubmit();
+
+    if (eglSwapBuffers(app->egl_provider.egl_display, this->egl_surface) == EGL_FALSE)
+    {
+        std::cerr << eglGetError() << " Failed to swap buffers\n";
+    }
+}
+
+void WindowToplevel::on_mouse_motion(int x, int y)
+{
+    UI::View *new_hovered_view = this->root_view->hit_test(SkPoint::Make(x, y));
+    if (new_hovered_view != nullptr)
+    {
+        if (new_hovered_view != hovered_view)
+        {
+            if (hovered_view != nullptr)
+            {
+                hovered_view->on_mouse_exit();
+            }
+            new_hovered_view->on_mouse_enter();
+            hovered_view = new_hovered_view;
+        }
+    }
+}
+
+void WindowToplevel::on_mouse_scroll(bool discrete, int delta, bool is_scrolling)
+{
+    std::cout << "window\n";
+    std::cout << "discrete " << discrete << "\n";
+    std::cout << "delta " << delta << "\n";
+    std::cout << "is_scrolling " << is_scrolling << "\n";
+    if (hovered_view != nullptr)
+    {
+        UI::Animation::Transaction::begin();
+        hovered_view->on_mouse_scroll(discrete, delta, is_scrolling);
+    }
+    else
+    {
+        // std::cout << "No view found";
+    }
 }
 
 void WindowToplevel::add_root_view(View *view)
 {
     this->root_view = view;
+    this->root_view->window = this;
 
     UI::Animation::Transaction::begin();
     this->root_view->view_did_load();
@@ -63,56 +105,29 @@ void WindowToplevel::add_root_view(View *view)
 void WindowToplevel::draw()
 {
     Application *app = Application::get_instance();
-    if (!this->finished_launching)
+
+    if (eglMakeCurrent(app->egl_provider.egl_display, this->egl_surface, this->egl_surface, app->egl_provider.egl_context) == EGL_FALSE)
     {
-        if (this->delegate == nullptr)
-        {
-            if (eglMakeCurrent(app->egl_provider.egl_display, this->egl_surface, this->egl_surface, app->egl_provider.egl_context) == EGL_FALSE)
-            {
-                std::cerr << "Failed to make EGL context current\n";
-            }
-            this->skia.surface->getCanvas()->clear(SK_ColorWHITE);
-            this->skia.surface->flushAndSubmit();
-            if (eglSwapBuffers(app->egl_provider.egl_display, this->egl_surface) == EGL_FALSE)
-            {
-                std::cerr << eglGetError() << " Failed to swap buffers\n";
-            }
-            return;
-        }
-        else
-        {
-            this->delegate->did_finish_launching(this);
-            this->finished_launching = true;
-            UI::Animation::Transaction::begin();
-            if (!root_view->loaded)
-            {
-                root_view->view_did_load();
-            }
-            this->root_view->layout_if_needed();
-            UI::Animation::Transaction::flush();
-        }
+        std::cerr << "Failed to make EGL context current\n";
     }
-    if (true)
+
+    if (this->root_view != nullptr)
     {
-        if (eglMakeCurrent(app->egl_provider.egl_display, this->egl_surface, this->egl_surface, app->egl_provider.egl_context) == EGL_FALSE)
+        UI::Animation::Transaction::begin();
+
+        if (this->needs_layout)
         {
-            std::cerr << "Failed to make EGL context current\n";
+            this->root_view->layout_if_needed();
+            this->needs_layout = false;
         }
 
+        UI::Animation::Transaction::flush();
         if (UI::Animation::AnimationCore::tick())
         {
             // std::cout << "Tick\n";
-            this->skia.surface->getCanvas()->clear(SK_ColorWHITE);
             this->render(this->root_view, SkPoint::Make(this->root_view->frame.x(), this->root_view->frame.y()));
-            this->skia.surface->flushAndSubmit();
-
-            if (eglSwapBuffers(app->egl_provider.egl_display, this->egl_surface) == EGL_FALSE)
-            {
-                std::cerr << eglGetError() << " Failed to swap buffers\n";
-            }
+            this->flush_and_submit();
         }
-
-        this->needs_redraw = false;
     }
 }
 
@@ -187,6 +202,16 @@ int WindowToplevel::get_height()
     return this->height;
 }
 
+void WindowToplevel::flush_and_submit()
+{
+    Application *app = Application::get_instance();
+    this->skia.surface->flushAndSubmit();
+    if (eglSwapBuffers(app->egl_provider.egl_display, this->egl_surface) == EGL_FALSE)
+    {
+        std::cerr << eglGetError() << " Failed to swap buffers\n";
+    }
+}
+
 void WindowToplevel::on_resize(int width, int height)
 {
     if (this->width == width && this->height == height)
@@ -203,10 +228,16 @@ void WindowToplevel::on_resize(int width, int height)
 
     wl_egl_window_resize(this->egl_window, width, height, 0, 0);
 
+    if (this->root_view != nullptr)
+    {
+        UI::Animation::Transaction::begin();
+        this->root_view->set_frame(UI::Shape::Rect(0, 0, width, height));
+        UI::Animation::Transaction::flush();
+    }
+
     this->skia.setup(width, height);
 
     this->needs_redraw = true;
-    this->draw();
 }
 
 void WindowToplevel::configure(Wayland::XDGToplevel *toplevel, int width, int height)

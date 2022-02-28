@@ -29,9 +29,27 @@ namespace Wayland
             this->x = x;
             this->y = y;
         }
+
+        virtual void on_mouse_scroll(bool discrete, int delta, bool is_scrolling){};
+
         virtual void on_mouse_click(){};
         virtual void on_mouse_up(){};
-        virtual void on_mouse_scroll(bool up){};
+    };
+
+    class MotionEvent
+    {
+    public:
+        bool already_sent;
+        int x, y;
+    };
+
+    class ScrollEvent
+    {
+    public:
+        bool already_sent;
+        int delta;
+        bool scrolling_has_stopped;
+        bool discrete;
     };
 
     class Pointer : public SeatListener
@@ -40,6 +58,9 @@ namespace Wayland
         PointerDelegate *delegate;
         struct wl_compositor *wl_compositor;
         struct wl_shm *wl_shm;
+
+        MotionEvent pending_mouse_event;
+        ScrollEvent pending_event;
 
         Pointer(struct wl_compositor *wl_compositor, struct wl_shm *wl_shm);
 
@@ -51,6 +72,13 @@ namespace Wayland
         void handle_name(struct wl_seat *wl_seat, const char *name)
         {
         }
+
+        void handle_motion(int x, int y);
+
+        void handle_scroll(int value);
+        void handle_scroll_stop();
+        void handle_discrete();
+        void handle_frame();
     };
 
     class Seat

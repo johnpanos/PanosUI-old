@@ -35,11 +35,11 @@ Application::~Application()
 void Application::add_window(Window *window)
 {
     this->windows.push_back(window);
+    window->delegate->did_finish_launching(window);
 }
 
 void Application::remove_window(Window *window)
 {
-    std::cout << "remove window\n";
     auto it = std::find(this->windows.begin(), this->windows.end(), window);
     if (it != this->windows.end())
     {
