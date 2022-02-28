@@ -4,6 +4,7 @@
 #include "ui/WindowShell.hpp"
 #include "ui/View.hpp"
 #include "ui/widget/Label.hpp"
+#include "ui/widget/Image.hpp"
 
 #include <iostream>
 #include <thread>
@@ -69,6 +70,9 @@ class ShellView : public UI::View
     using UI::View::View;
 
     UI::Label *time_label;
+    UI::Label *program_label;
+    UI::Image *image;
+
     HoverView *menu_button;
     HoverView *program_view;
 
@@ -86,6 +90,15 @@ class ShellView : public UI::View
         this->add_subview(program_view);
         program_view->background_color = SkColorSetARGB(255, 150, 150, 150);
         program_view->set_background_radius(8);
+
+        this->image = new UI::Image("/usr/share/icons/hicolor/16x16/apps/firefox.png");
+        this->program_view->add_subview(image);
+
+        program_label = new UI::Label();
+        program_label->set_contents("Firefox");
+        program_label->set_font_size(12);
+        program_label->color = SK_ColorWHITE;
+        this->program_view->add_subview(program_label);
 
         time_label = new UI::Label();
         time_label->set_contents("5:00 AM");
@@ -109,6 +122,13 @@ class ShellView : public UI::View
 
         this->time_label->set_contents(str);
         this->time_label->size_to_fit();
+        this->program_label->size_to_fit();
+
+        int program_width = this->program_view->frame.width();
+        int program_height = this->program_view->frame.height();
+
+        this->image->set_frame(UI::Shape::Rect(8, program_height / 2 - this->image->frame.height() / 2, 16, 16));
+        this->program_label->set_frame(UI::Shape::Rect(this->image->frame.x() + 16 + 6, program_height / 2 - this->program_label->frame.height() / 2, this->program_label->frame.width(), this->program_label->frame.height()));
 
         int width = this->time_label->frame.width();
         int height = this->time_label->frame.height();
@@ -216,10 +236,9 @@ class RootView : public UI::View
     using UI::View::View;
 
     UI::View *test_view;
+    UI::Label *label;
     ShellView *shell_view;
     ScrollView *scroll_view;
-
-    UI::Label *label;
 
     virtual void view_did_load()
     {
