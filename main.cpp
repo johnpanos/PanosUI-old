@@ -268,13 +268,10 @@ class MyWindowDelegate : public UI::WindowDelegate
 int main()
 {
     UI::Application *app = UI::Application::get_instance();
-    UI::WindowToplevel *window = new UI::WindowToplevel("PanosUI", 500, 500);
     UI::WindowShell *shell_surface = new UI::WindowShell(app->registry->wl_outputs.at(0));
 
-    window->delegate = new MyWindowDelegate();
     shell_surface->delegate = new MyWindowDelegate();
 
-    app->add_window(window);
     app->add_window(shell_surface);
     app->run();
 }

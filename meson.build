@@ -13,7 +13,6 @@ glx = dependency('glx')
 src = [
     'xdg-shell-protocol.c',
     'wlr-layer-shell-unstable-v1.c',
-    'main.cpp',
     'egl.cpp',
 
     'wayland/Display.cpp',
@@ -42,4 +41,14 @@ src = [
 skia = declare_dependency(link_args : ['-L/home/john/skia/out/linux/x64', '-lskia'],
                                include_directories : ['./thirdparty/skia'])
 
-executable('panos-client', src, dependencies: [wayland_egl, wayland_client, wayland_cursor, wl_roots, egl, glesv2, fontconfig, freetype, glx, skia])
+panosuilib = shared_library('panosui',
+                        src,
+                        include_directories : ['ui', 'wayland'],
+                        dependencies : [wayland_egl, wayland_client, wayland_cursor, wl_roots, egl, glesv2, fontconfig, freetype, glx, skia],
+                        install : true)
+
+panosclient = executable('panos-client', 'main.cpp',
+                     include_directories : ['ui', 'wayland', './thirdparty/skia'],
+                     link_with : panosuilib)
+
+# executable('panos-client', src, dependencies: [wayland_egl, wayland_client, wayland_cursor, wl_roots, egl, glesv2, fontconfig, freetype, glx, skia])

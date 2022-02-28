@@ -49,7 +49,6 @@ View::View(Shape::Rect frame)
 
 void View::set_frame(Shape::Rect frame)
 {
-    std::cout << "Setting frame " << frame.x() << " " << frame.y() << " " << frame.width() << " " << frame.height() << "\n";
     this->needs_repaint = true;
     this->frame = frame;
     this->bounds = UI::Shape::Rect(this->bounds.x(), this->bounds.y(), frame.width(), frame.height());
