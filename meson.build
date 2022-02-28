@@ -33,6 +33,7 @@ src = [
     'ui/Skia.cpp',
     'ui/View.cpp',
     'ui/Window.cpp',
+    'ui/WindowShell.cpp',
     'ui/WindowToplevel.cpp',
 
     'ui/widget/Label.cpp'

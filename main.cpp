@@ -1,10 +1,9 @@
 #include "ui/Application.hpp"
 #include "ui/Window.hpp"
 #include "ui/WindowToplevel.hpp"
+#include "ui/WindowShell.hpp"
 #include "ui/View.hpp"
 #include "ui/widget/Label.hpp"
-
-#include "wayland/ShellSurface.hpp"
 
 #include <iostream>
 #include <thread>
@@ -227,17 +226,17 @@ class RootView : public UI::View
         UI::View::view_did_load();
         this->background_color = SkColorSetRGB(33, 33, 33);
 
-        this->label = new UI::Label();
-        this->label->set_contents("Edging.");
-        this->label->set_font_size(48);
-        this->label->color = SK_ColorWHITE;
-        this->add_subview(label);
+        // this->label = new UI::Label();
+        // this->label->set_contents("Edging.");
+        // this->label->set_font_size(48);
+        // this->label->color = SK_ColorWHITE;
+        // this->add_subview(label);
 
         this->shell_view = new ShellView(0, 0, 10, 10);
         this->add_subview(shell_view);
 
-        this->scroll_view = new ScrollView(0, 0, 100, 100);
-        this->add_subview(scroll_view);
+        // this->scroll_view = new ScrollView(0, 0, 100, 100);
+        // this->add_subview(scroll_view);
     }
 
     virtual void layout_subviews()
@@ -246,15 +245,15 @@ class RootView : public UI::View
         int height = this->frame.height();
         std::cout << width << "\n";
 
-        this->label->size_to_fit();
-        int label_width = this->label->frame.width();
-        int label_height = this->label->frame.height();
-        int x = width / 2 - label_width / 2;
-        int y = 32;
-        this->label->set_frame(UI::Shape::Rect(x, y, label_width, label_height));
+        // this->label->size_to_fit();
+        // int label_width = this->label->frame.width();
+        // int label_height = this->label->frame.height();
+        // int x = width / 2 - label_width / 2;
+        // int y = 32;
+        // this->label->set_frame(UI::Shape::Rect(x, y, label_width, label_height));
 
-        this->shell_view->set_frame(UI::Shape::Rect(0, height - 32, width, 32));
-        this->scroll_view->set_frame(UI::Shape::Rect(width / 4, height / 4, width / 2, height / 2));
+        this->shell_view->set_frame(UI::Shape::Rect(0, 0, width, 32));
+        // this->scroll_view->set_frame(UI::Shape::Rect(width / 4, height / 4, width / 2, height / 2));
     }
 };
 
@@ -262,50 +261,20 @@ class MyWindowDelegate : public UI::WindowDelegate
 {
     virtual void did_finish_launching(UI::Window *window)
     {
-        window->add_root_view(new RootView(0, 0, 500, 500));
+        window->add_root_view(new RootView(0, 0, 2560, 72));
     }
 };
 
 int main()
 {
     UI::Application *app = UI::Application::get_instance();
-    Wayland::ShellSurface *shell_surface = new Wayland::ShellSurface(app->registry->layer_shell, app->registry->wl_outputs.at(0), app->registry->wl_compositor);
-    shell_surface->commit();
-    app->display.round_trip();
+    UI::WindowToplevel *window = new UI::WindowToplevel("PanosUI", 500, 500);
+    UI::WindowShell *shell_surface = new UI::WindowShell(app->registry->wl_outputs.at(0));
 
-    UI::Skia skia;
-    EGLSurface egl_surface;
-    wl_egl_window *egl_window;
+    window->delegate = new MyWindowDelegate();
+    shell_surface->delegate = new MyWindowDelegate();
 
-    egl_window = wl_egl_window_create(shell_surface->wl_surface, 100, 100);
-    egl_surface = eglCreateWindowSurface(app->egl_provider.egl_display, app->egl_provider.egl_config, egl_window, nullptr);
-
-    if (egl_surface == EGL_NO_SURFACE)
-    {
-        std::cerr << "Failed to create EGL window surface\n";
-    }
-
-    if (eglMakeCurrent(app->egl_provider.egl_display, egl_surface, egl_surface, app->egl_provider.egl_context) == EGL_FALSE)
-    {
-        std::cerr << "Failed to make EGL context current\n";
-    }
-
-    skia.setup(100, 100);
-
-    skia.surface->getCanvas()->clear(SK_ColorWHITE);
-    skia.surface->flushAndSubmit();
-
-    if (eglSwapBuffers(app->egl_provider.egl_display, egl_surface) == EGL_FALSE)
-    {
-        std::cerr << eglGetError() << " Failed to swap buffers\n";
-    }
-
-    while (app->display.round_trip())
-        ;
-
-    // UI::WindowToplevel *window = new UI::WindowToplevel("PanosUI", 500, 500);
-    // window->delegate = new MyWindowDelegate();
-
-    // app->add_window(window);
-    // app->run();
+    app->add_window(window);
+    app->add_window(shell_surface);
+    app->run();
 }

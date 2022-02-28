@@ -30,7 +30,10 @@ namespace UI
         int height;
 
         virtual int get_width();
+        virtual void set_width(int width);
+
         virtual int get_height();
+        virtual void set_height(int height);
 
         virtual void configure(Wayland::XDGToplevel *toplevel, int width, int height);
         virtual void close();

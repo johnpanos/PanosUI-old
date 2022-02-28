@@ -23,6 +23,9 @@ WindowToplevel::WindowToplevel(const char *title, int width, int height) : Windo
     std::cout << "Created WindowToplevel " << width << " " << height << "\n";
     Application *app = Application::get_instance();
 
+    this->width = width;
+    this->height = height;
+
     this->toplevel = new Wayland::XDGToplevel(app->registry->xdg_wm_base, app->registry->wl_compositor);
     this->toplevel->listener = this;
     this->toplevel->set_title(title);
@@ -30,7 +33,6 @@ WindowToplevel::WindowToplevel(const char *title, int width, int height) : Windo
 
     this->surface = this->toplevel;
     app->display.round_trip();
-
     this->setup_egl();
 
     struct wl_callback *cb = wl_surface_frame(toplevel->wl_surface);
@@ -76,22 +78,32 @@ void WindowToplevel::on_mouse_scroll(bool discrete, int delta, bool is_scrolling
     }
 }
 
-int WindowToplevel::get_width()
-{
-    return this->width;
-}
-
-int WindowToplevel::get_height()
-{
-    return this->height;
-}
-
 void WindowToplevel::configure(Wayland::XDGToplevel *toplevel, int width, int height)
 {
     if (width > 0 && height > 0)
     {
         this->on_resize(width, height);
     }
+}
+
+void WindowToplevel::set_width(int width)
+{
+    this->width = width;
+}
+
+int WindowToplevel::get_width()
+{
+    return width;
+}
+
+void WindowToplevel::set_height(int height)
+{
+    this->height = height;
+}
+
+int WindowToplevel::get_height()
+{
+    return height;
 }
 
 void WindowToplevel::close()

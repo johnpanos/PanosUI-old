@@ -43,17 +43,13 @@ namespace UI
 
         Window();
 
-        virtual void on_mouse_motion(int x, int y)
-        {
-            this->x = x;
-            this->y = y;
-        }
+        virtual void on_mouse_motion(int x, int y);
         virtual void on_mouse_click()
         {
             std::cout << "Click!\n";
         };
         virtual void on_mouse_up(){};
-        virtual void on_mouse_scroll(bool discrete, int delta, bool is_scrolling){};
+        virtual void on_mouse_scroll(bool discrete, int delta, bool is_scrolling);
 
         virtual void add_root_view(View *view);
 
@@ -61,10 +57,10 @@ namespace UI
         virtual void render(View *view, SkPoint origin);
 
         virtual int get_width() = 0;
-        virtual int set_width(int width) = 0;
+        virtual void set_width(int width) = 0;
 
         virtual int get_height() = 0;
-        virtual int set_height(int height) = 0;
+        virtual void set_height(int height) = 0;
 
         virtual void on_resize(int width, int height);
         virtual void flush_and_submit();

@@ -25,6 +25,40 @@ void Window::setup_egl()
     }
 }
 
+void Window::on_mouse_motion(int x, int y)
+{
+    UI::View *new_hovered_view = this->root_view->hit_test(SkPoint::Make(x, y));
+    if (new_hovered_view != nullptr)
+    {
+        if (new_hovered_view != hovered_view)
+        {
+            if (hovered_view != nullptr)
+            {
+                hovered_view->on_mouse_exit();
+            }
+            new_hovered_view->on_mouse_enter();
+            hovered_view = new_hovered_view;
+        }
+    }
+}
+
+void Window::on_mouse_scroll(bool discrete, int delta, bool is_scrolling)
+{
+    std::cout << "window\n";
+    std::cout << "discrete " << discrete << "\n";
+    std::cout << "delta " << delta << "\n";
+    std::cout << "is_scrolling " << is_scrolling << "\n";
+    if (hovered_view != nullptr)
+    {
+        UI::Animation::Transaction::begin();
+        hovered_view->on_mouse_scroll(discrete, delta, is_scrolling);
+    }
+    else
+    {
+        // std::cout << "No view found";
+    }
+}
+
 void Window::add_root_view(View *view)
 {
     this->root_view = view;
@@ -128,9 +162,7 @@ void Window::render(View *view, SkPoint origin)
 
 void Window::on_resize(int width, int height)
 {
-    if (this->get_width() == width && this->get_height() == height)
-        return;
-
+    std::cout << "resize " << width << " " << height << "\n";
     Application *app = Application::get_instance();
     if (eglMakeCurrent(app->egl_provider.egl_display, this->egl_surface, this->egl_surface, app->egl_provider.egl_context) == EGL_FALSE)
     {
@@ -152,6 +184,7 @@ void Window::on_resize(int width, int height)
     this->skia.setup(width, height);
 
     this->needs_redraw = true;
+    this->needs_layout = true;
 }
 
 void Window::flush_and_submit()
