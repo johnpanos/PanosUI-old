@@ -11,7 +11,7 @@ Label::Label() : View(0, 0, 2, 2)
 
 void Label::set_font_size(int size)
 {
-    SkFontStyle font_style(SkFontStyle::kLight_Weight, SkFontStyle::kNormal_Width, SkFontStyle::Slant::kUpright_Slant);
+    SkFontStyle font_style(SkFontStyle::kMedium_Weight, SkFontStyle::kNormal_Width, SkFontStyle::Slant::kUpright_Slant);
     this->font = SkFont(SkTypeface::MakeFromName("Inter", font_style), size);
     this->font.setEdging(SkFont::Edging::kSubpixelAntiAlias);
     this->font.setSubpixel(true);

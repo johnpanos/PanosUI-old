@@ -48,6 +48,6 @@ void Registry::global(struct wl_registry *wl_registry,
     {
         std::cout << "Output found\n";
         this->wl_outputs.emplace_back(static_cast<struct wl_output *>(wl_registry_bind(wl_registry, name,
-                                                                                       &wl_output_interface, 1)));
+                                                                                       &wl_output_interface, 4)));
     }
 }

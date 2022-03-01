@@ -33,10 +33,8 @@ void EventResponder::on_mouse_up(int x, int y)
 
 void EventResponder::on_mouse_enter()
 {
-    // std::cout << "Not handling mouse enter\n";
     if (this->next != nullptr)
     {
-        // std::cout << "Passing mouse enter\n";
         this->next->on_mouse_enter();
     }
 }

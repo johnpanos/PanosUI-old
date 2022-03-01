@@ -71,7 +71,7 @@ static void wl_pointer_motion(void *data, struct wl_pointer *wl_pointer,
 static void wl_pointer_button(void *data, struct wl_pointer *wl_pointer,
                               uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
 {
-    std::cout << "Click!!\n";
+    // std::cout << "Click!!\n";
     Pointer *pointer = static_cast<Pointer *>(data);
     if (button == BTN_LEFT && state == 1)
     {
@@ -171,7 +171,7 @@ void Pointer::handle_discrete()
 
 void Pointer::handle_frame()
 {
-    std::cout << "\n\nFrame received\n";
+    // std::cout << "\n\nFrame received\n";
 
     if (!this->pending_mouse_event.already_sent)
     {

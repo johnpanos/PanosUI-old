@@ -24,8 +24,8 @@ class HoverView : public UI::View
     virtual void view_did_load()
     {
         UI::View::view_did_load();
-        this->opacity = 150;
-        this->layer->opacity.set(150);
+        this->opacity = 0;
+        this->layer->opacity.set(0);
     }
 
     int x_before = 0;
@@ -55,13 +55,13 @@ class HoverView : public UI::View
     virtual void on_mouse_enter()
     {
         UI::View::animate(250, [this]()
-                          { this->set_opacity(255); });
+                          { this->set_opacity(150); });
     }
 
     virtual void on_mouse_exit()
     {
         UI::View::animate(500, [this]()
-                          { this->set_opacity(150); });
+                          { this->set_opacity(0); });
     }
 };
 
@@ -81,17 +81,17 @@ class ShellView : public UI::View
         UI::View::view_did_load();
         this->background_color = SkColorSetARGB(230, 47, 53, 69);
 
-        menu_button = new HoverView(UI::Shape::Rect(8, 4, 24, 24));
+        menu_button = new HoverView(UI::Shape::Rect(8, 0, 42, 42));
         this->add_subview(menu_button);
         menu_button->background_color = SkColorSetARGB(255, 150, 150, 150);
         menu_button->set_background_radius(8);
 
-        program_view = new HoverView(UI::Shape::Rect(this->menu_button->frame.width() + this->menu_button->frame.x() + 12, 4, 130, 24));
+        program_view = new HoverView(UI::Shape::Rect(this->menu_button->frame.width() + this->menu_button->frame.x() + 12, 0, 130, 42));
         this->add_subview(program_view);
         program_view->background_color = SkColorSetARGB(255, 150, 150, 150);
         program_view->set_background_radius(8);
 
-        this->image = new UI::Image("/usr/share/icons/hicolor/16x16/apps/firefox.png");
+        this->image = new UI::Image("/usr/share/icons/hicolor/22x22/apps/firefox.png");
         this->program_view->add_subview(image);
 
         program_label = new UI::Label();
@@ -127,8 +127,8 @@ class ShellView : public UI::View
         int program_width = this->program_view->frame.width();
         int program_height = this->program_view->frame.height();
 
-        this->image->set_frame(UI::Shape::Rect(8, program_height / 2 - this->image->frame.height() / 2, 16, 16));
-        this->program_label->set_frame(UI::Shape::Rect(this->image->frame.x() + 16 + 6, program_height / 2 - this->program_label->frame.height() / 2, this->program_label->frame.width(), this->program_label->frame.height()));
+        this->image->set_frame(UI::Shape::Rect(12, program_height / 2 - this->image->frame.height() / 2, 22, 22));
+        this->program_label->set_frame(UI::Shape::Rect(this->image->frame.x() + 22 + 6, program_height / 2 - this->program_label->frame.height() / 2, this->program_label->frame.width(), this->program_label->frame.height()));
 
         int width = this->time_label->frame.width();
         int height = this->time_label->frame.height();
@@ -271,7 +271,7 @@ class RootView : public UI::View
         // int y = 32;
         // this->label->set_frame(UI::Shape::Rect(x, y, label_width, label_height));
 
-        this->shell_view->set_frame(UI::Shape::Rect(0, 0, width, 32));
+        this->shell_view->set_frame(UI::Shape::Rect(0, 0, width, 42));
         // this->scroll_view->set_frame(UI::Shape::Rect(width / 4, height / 4, width / 2, height / 2));
     }
 };
@@ -287,7 +287,7 @@ class MyWindowDelegate : public UI::WindowDelegate
 int main()
 {
     UI::Application *app = UI::Application::get_instance();
-    UI::WindowShell *shell_surface = new UI::WindowShell(app->registry->wl_outputs.at(0));
+    UI::WindowShell *shell_surface = new UI::WindowShell(app->registry->wl_outputs.at(1));
 
     shell_surface->delegate = new MyWindowDelegate();
 

@@ -30,10 +30,11 @@ ShellSurface::ShellSurface(struct zwlr_layer_shell_v1 *layer_shell, struct wl_ou
     assert(layer_shell != nullptr);
     assert(wl_output != nullptr);
     assert(compositor != nullptr);
+
     this->layer_surface = zwlr_layer_shell_v1_get_layer_surface(layer_shell, this->wl_surface, wl_output, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM, "PanosUI2");
-    zwlr_layer_surface_v1_set_size(layer_surface, 2560, 32);
+    zwlr_layer_surface_v1_set_size(layer_surface, 2560, 42);
     zwlr_layer_surface_v1_set_anchor(layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM);
-    zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, 32);
+    zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, 42);
     zwlr_layer_surface_v1_set_margin(layer_surface,
                                      0, 0, 0, 0);
     zwlr_layer_surface_v1_set_keyboard_interactivity(

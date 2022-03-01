@@ -21,18 +21,19 @@ static void output_geometry(void *data, struct wl_output *output, int x, int y,
 static void output_mode(void *data, struct wl_output *output, uint32_t flags,
                         int width, int height, int refresh)
 {
+    std::cout << "width: " << width << "\n";
+    std::cout << "height: " << height << "\n";
+    std::cout << "refresh: " << refresh << "\n";
     (void)data;
     (void)output;
     (void)flags;
     (void)width;
     (void)height;
     (void)refresh;
-    std::cout << "width: " << width << "\n";
-    std::cout << "height: " << height << "\n";
-    std::cout << "refresh: " << refresh << "\n";
+
     WindowShell *window = static_cast<WindowShell *>(data);
     window->set_width(width);
-    window->set_height(72);
+    window->set_height(48);
 }
 static void output_done(void *data, struct wl_output *output)
 {
@@ -45,11 +46,27 @@ static void output_scale(void *data, struct wl_output *wl_output,
     std::cout << "Scale factor: " << scale_factor << "\n";
 }
 
+static void output_name(void *data,
+                        struct wl_output *wl_output,
+                        const char *name)
+{
+    std::cout << "Name: " << name << "\n";
+}
+
+static void output_description(void *data,
+                               struct wl_output *wl_output,
+                               const char *description)
+{
+    std::cout << "Description: " << description << "\n";
+}
+
 static const struct wl_output_listener output_listener = {
     .geometry = output_geometry,
     .mode = output_mode,
     .done = output_done,
-    .scale = output_scale};
+    .scale = output_scale,
+    .name = output_name,
+    .description = output_description};
 
 WindowShell::WindowShell(struct wl_output *wl_output) : Window()
 {
