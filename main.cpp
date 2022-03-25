@@ -271,7 +271,7 @@ class RootView : public UI::View
         // int y = 32;
         // this->label->set_frame(UI::Shape::Rect(x, y, label_width, label_height));
 
-        this->shell_view->set_frame(UI::Shape::Rect(0, 0, width, 42));
+        this->shell_view->set_frame(UI::Shape::Rect(0, 0, width, 48));
         // this->scroll_view->set_frame(UI::Shape::Rect(width / 4, height / 4, width / 2, height / 2));
     }
 };
@@ -280,14 +280,15 @@ class MyWindowDelegate : public UI::WindowDelegate
 {
     virtual void did_finish_launching(UI::Window *window)
     {
-        window->add_root_view(new RootView(0, 0, 2560, 72));
+        window->add_root_view(new RootView(0, 0, window->get_width(), 48));
     }
 };
 
 int main()
 {
     UI::Application *app = UI::Application::get_instance();
-    UI::WindowShell *shell_surface = new UI::WindowShell(app->registry->wl_outputs.at(1));
+    UI::WindowShell *shell_surface = new UI::WindowShell(app->registry->wl_outputs.at(0));
+    // UI::WindowToplevel *shell_surface = new UI::WindowToplevel("PanosUI", 500, 500);
 
     shell_surface->delegate = new MyWindowDelegate();
 

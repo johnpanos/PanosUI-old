@@ -21,6 +21,8 @@ namespace UI
 
         virtual int get_height();
         virtual void set_height(int height);
+
+	virtual void on_resize(int width, int height);
     };
 };
 

@@ -173,6 +173,7 @@ void Window::on_resize(int width, int height)
     this->set_height(height);
 
     wl_egl_window_resize(this->egl_window, width, height, 0, 0);
+    this->skia.setup(width, height);
 
     if (this->root_view != nullptr)
     {
@@ -180,8 +181,6 @@ void Window::on_resize(int width, int height)
         this->root_view->set_frame(UI::Shape::Rect(0, 0, width, height));
         UI::Animation::Transaction::flush();
     }
-
-    this->skia.setup(width, height);
 
     this->needs_redraw = true;
     this->needs_layout = true;

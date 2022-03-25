@@ -1,4 +1,5 @@
 #include "WindowShell.hpp"
+#include "../wlr-layer-shell-unstable-v1.h"
 
 using namespace UI;
 
@@ -107,4 +108,12 @@ void WindowShell::set_height(int height)
 int WindowShell::get_height()
 {
     return height;
+}
+
+void WindowShell::on_resize(int width, int height)
+{
+	zwlr_layer_surface_v1_set_size(this->shell_surface->layer_surface, width, height);
+	zwlr_layer_surface_v1_set_exclusive_zone(this->shell_surface->layer_surface, height);
+	wl_surface_set_buffer_scale(this->shell_surface->wl_surface, 2);
+	UI::Window::on_resize(width, height);
 }
